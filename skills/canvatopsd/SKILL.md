@@ -3,7 +3,7 @@ name: canvatopsd
 description: Convert public Canva links to editable layered Photoshop PSDs, or retrieve previews and paid files for an existing CanvaToPSD task. Use for Canva to PSD, Canva to Photoshop, Canva 转 PSD and Canva 导出分层文件. Requires shell access; does not edit existing PSDs or convert arbitrary images/PDFs.
 metadata:
   author: CanvaToPSD
-  version: "3.1.0"
+  version: "3.1.1"
   homepage: https://canvatopsd.com/ai-agent
 ---
 
@@ -27,7 +27,7 @@ canvatopsd checkout TASK
 canvatopsd download TASK --out /absolute/design.psd
 ```
 
-The bundled instructions describe Rust CLI 3.1.0; the same short workflow exists in 2.3+. `convert` submits the design, discovers pages and waits up to 300 seconds for previews. Use its returned `taskId` as the same TASK for every later command. Never look up or switch to internal conversion IDs.
+The bundled instructions describe Rust CLI 3.1.1; the same short workflow exists in 2.3+. `convert` submits the design, discovers pages and waits up to 300 seconds for previews. Use its returned `taskId` as the same TASK for every later command. Never look up or switch to internal conversion IDs.
 
 For multiple pages, use `convert URL --pages 1,3`. It does not guess which pages the user wants. To preview, check out or download one selected design page, add its number, e.g. `preview TASK --page 3 --out /absolute/page3.webp`. Page numbers are 1-based. If several pages were converted, omitting `--page` reports the available numbers.
 

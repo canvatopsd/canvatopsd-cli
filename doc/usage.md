@@ -50,7 +50,7 @@ Convert writes its initial submission key to stderr before the request and inclu
 
 `preview`, `checkout`, `download`, `files`, `payment status` and `payment confirm` support `--page NUMBER`. The normal workflow does not require a separate payment command.
 
-`checkoutUrl` is a CanvaToPSD-hosted checkout entry. Give it to the user unchanged; do not substitute an old PayPal URL. It establishes a task cookie in the browser that opens it, then continues to the same PayPal order. This also works for existing orders and does not require opening a private task link first. The entry lasts seven days. Run checkout again to obtain a fresh entry without reconverting or creating another payment order. The API unit maintains the protocol in `doc/task-return-routing.md`.
+`checkoutUrl` is a CanvaToPSD-hosted checkout entry. Give it to the user unchanged; do not substitute an old PayPal URL. It establishes a task cookie in the browser that opens it, then displays the same task page, price, previews and PayPal/Creem payment controls as the Web workflow. The user chooses the payment method on that page; opening the link does not redirect automatically to a payment provider. This also works for existing orders and does not require opening a private task link first. The entry lasts seven days. Run checkout again to obtain a fresh entry without reconverting or creating another payment order. The API unit maintains the protocol in `doc/task-return-routing.md`.
 
 `convert`, `create` and `select` with `--dry-run` validate locally without saving credentials or submitting a task. `checkout --dry-run` reads the live quote without creating a payment. Business status is fetched each time; the CLI does not save a latest task or cache quotes.
 
