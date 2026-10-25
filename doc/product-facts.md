@@ -28,21 +28,18 @@ The CLI can retrieve a layered PSD, WebP preview, JSON/WebP layer preview, font 
 
 Vector paths remain rasterized. Font availability and effects may differ from Canva. Video, animation, interactive exports and offline Canva rendering are not supported. A verified download confirms size and SHA-256 transfer integrity, not pixel-identical rendering or Photoshop reopening.
 
-## Availability: source release and hosted distribution
+## Availability and platform requirements
 
-Source release and CI acceptance are version-specific. Website distribution was last checked on 2026-10-24:
+| Channel             | State                                                                                                                                                     |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public npm registry | [@canvatopsd/cli](https://www.npmjs.com/package/@canvatopsd/cli) is published; install with `npm install -g @canvatopsd/cli`                              |
+| Supported platforms | macOS Apple Silicon (ARM64), Linux ARM64/x64, Windows ARM64/x64                                                                                           |
+| Native acceptance   | Each release requires matching native receipts for all five platforms in [CI](https://github.com/canvatopsd/canvatopsd-cli/actions/workflows/release.yml) |
+| Website download    | Follows the independent Web release; inspect its [release metadata](https://canvatopsd.com/agent/release.json) separately                                 |
 
-| Channel                  | State                                                                                                                        |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| This source release      | Rust 3.1.5; accepted local target is macOS Apple Silicon (`darwin-arm64`)                                                    |
-| Local install archive    | `releases/canvatopsd-cli-3.1.5.tgz` after the checked release build                                                          |
-| Website CLI distribution | The public [release metadata](https://canvatopsd.com/agent/release.json) reported 2.3.3; it is an earlier JavaScript release |
-| Public npm registry      | The package metadata request returned HTTP 404; this Rust release has not been published                                     |
-| Other Rust platforms     | Build definitions exist; native execution acceptance is pending                                                              |
+The npm launcher requires Node.js 22.16+. End users do not need Rust; direct native binaries do not need Node. Linux requires glibc and OpenSSL 3. macOS Intel and Alpine/musl are unsupported. Hosted conversion requires an internet connection regardless of client runtime.
 
-Installing from the website does not currently install this Rust release. Registry commands such as `npx --yes @canvatopsd/cli` are intended for use after public npm publication. A directory cloned onto a local machine and an installed Skill make the tool discoverable there; they do not make it searchable on the public web.
-
-For Rust npm archives, Node.js 22.16+ is required only for the native launcher; Rust is not required by end users. Direct native binaries do not require Node. The hosted 2.3.3 JavaScript CLI requires Node.js 24.5+. Hosted conversions require an internet connection regardless of client runtime.
+Use `canvatopsd --version` and `canvatopsd discover` to identify the installed package. Website documentation can describe a different release.
 
 ## Agent interface and payment
 

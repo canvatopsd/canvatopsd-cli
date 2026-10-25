@@ -15,6 +15,8 @@ npm run deploy:local
 
 When this checkout is nested inside another repository, place npm's cache in that repository's root `.tmp/`. The build scripts choose the owning repository's `.tmp/` for Cargo output, candidates and verification records. This maintainer document is not included in the npm package.
 
+Source lives in `src/`, the npm launcher in `bin/`, build and deployment tools in `deployment/`, public documentation in `doc/`, and bundled Agent instructions in `skills/`. Use `npm install -g /path/to/checked-package.tgz` when installing an accepted archive manually. Normal users should install `@canvatopsd/cli` from npm.
+
 ## Public metadata and privacy
 
 `build.rs` selects only the product identity, capabilities, input/output descriptions, documentation paths and service requirements needed by `discover`. The full source manifest is not embedded in the executable. Do not add unpublished repository addresses, personal email addresses or credentials to public metadata.
@@ -22,6 +24,8 @@ When this checkout is nested inside another repository, place npm's cache in tha
 `deployment/cargo-environment.mjs` applies path-prefix remapping to both application and dependency compilation. Release validation inspects every final file, including native binaries, for developer home paths, internal repository/service identifiers and complete private-key blocks. It also rejects unresolved Git LFS pointers, mismatched architectures, stale command documentation and differing embedded Skill files. A failed check blocks packaging and installation. A detector result does not replace a review of newly added content.
 
 Keep Git authorship suitable for public distribution. This repository uses the public CanvaToPSD support identity. Do not commit local backups, credentials, customer artifacts or internal acceptance records.
+
+Public documentation and bundled Agent instructions are English-only. Final release checks reject Chinese characters in packaged text files.
 
 Argument errors expose the error category and schema-generated usage, never raw argument values. Credential files use mode 0600 on Unix. Windows uses a protected DACL granting full control only to the current process user, without inherited access rules. Existing configuration files are restricted before reading; temporary configuration and exported credentials are restricted before writing. Permission failures stop the command. Native platform acceptance verifies legacy configuration migration, export permissions and credential-safe argument errors using synthetic data, including Windows x64 and ARM64.
 

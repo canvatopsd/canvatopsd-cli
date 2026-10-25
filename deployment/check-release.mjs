@@ -53,6 +53,11 @@ export async function checkRelease(
             .startsWith("version https://git-lfs.github.com/spec/v1")
         )
           throw new Error(`Unrestored LFS pointer: ${path}`);
+        if (
+          /\.(?:md|json|ya?ml|mjs|txt)$/.test(item.name) &&
+          /\p{Script=Han}/u.test(await readFile(path, "utf8"))
+        )
+          throw new Error(`Chinese characters found in release text: ${path}`);
         files++;
       } else throw new Error(`Unexpected release entry: ${path}`);
     }

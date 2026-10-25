@@ -1,9 +1,9 @@
 ---
 name: canvatopsd
-description: Convert public Canva links to editable layered Photoshop PSDs, or retrieve previews and paid files for an existing CanvaToPSD task. Use for Canva to PSD, Canva to Photoshop, Canva 转 PSD and Canva 导出分层文件. Requires shell access; does not edit existing PSDs or convert arbitrary images/PDFs.
+description: Convert public Canva links to editable layered Photoshop PSDs, or retrieve previews and paid files for an existing CanvaToPSD task. Use for Canva to PSD, Canva to Photoshop and layered PSD export. Requires shell access; does not edit existing PSDs or convert arbitrary images/PDFs.
 metadata:
   author: CanvaToPSD
-  version: "3.1.5"
+  version: "3.1.6"
   homepage: https://canvatopsd.com/ai-agent
 ---
 
@@ -21,15 +21,15 @@ Use `canvatopsd` with Node.js 22.16+ (npm launcher; conversion commands run in R
 
 ```sh
 canvatopsd convert 'CANVA_PUBLIC_VIEW_URL'
-canvatopsd preview TASK --out /absolute/preview.webp
+canvatopsd preview TASK --out ./preview.webp
 canvatopsd checkout TASK
 # After the user pays:
-canvatopsd download TASK --out /absolute/design.psd
+canvatopsd download TASK --out ./design.psd
 ```
 
-The bundled instructions describe Rust CLI 3.1.5; the same short workflow exists in 2.3+. `convert` submits the design, discovers pages and waits up to 300 seconds for previews. Use its returned `taskId` as the same TASK for every later command. Never look up or switch to internal conversion IDs.
+The bundled instructions describe Rust CLI 3.1.6; the same short workflow exists in 2.3+. `convert` submits the design, discovers pages and waits up to 300 seconds for previews. Use its returned `taskId` as the same TASK for every later command. Never look up or switch to internal conversion IDs.
 
-For multiple pages, use `convert URL --pages 1,3`. It does not guess which pages the user wants. To preview, check out or download one selected design page, add its number, e.g. `preview TASK --page 3 --out /absolute/page3.webp`. Page numbers are 1-based. If several pages were converted, omitting `--page` reports the available numbers.
+For multiple pages, use `convert URL --pages 1,3`. It does not guess which pages the user wants. To preview, check out or download one selected design page, add its number, e.g. `preview TASK --page 3 --out ./page3.webp`. Page numbers are 1-based. If several pages were converted, omitting `--page` reports the available numbers.
 
 A timeout preserves the task and returns `error.taskId`; resume with `wait TASK --seconds 300`. Existing tasks start with `status TASK` or `wait TASK`, without creating another task. If discovery finds several pages without a selection, read `error.availablePages`, ask the user to choose, run `select TASK PAGE_NUMBERS`, then `wait TASK`. File and payment results retain that TASK as `data.taskId` and expose `data.page`. Keep the same TASK throughout. `status` reports selected page numbers and their readiness.
 
@@ -43,4 +43,4 @@ Deliver the saved PSD link and preview when available. Report dimensions, layers
 
 Read [references/operations.md](references/operations.md) only for credential backup/import, missing task access, direct API/operator calls, configuration details, font/layer preview files, or CLI installation. It includes retry and endpoint constraints. Raw task credentials and exported access files are secret; do not attach them to chat. The opaque hosted `checkoutUrl` is intended for delivery to the paying user.
 
-For Skill discovery use `canvatopsd skill status codex`; install with `skill install codex` or `skill install --dir /absolute/project/.agents/skills`. Review existing local edits before `--replace`, which replaces the whole Skill directory. Start a new Agent session to refresh an already loaded Skill catalog.
+For Skill discovery use `canvatopsd skill status codex`; install with `skill install codex` or `skill install --dir ./.agents/skills`. Review existing local edits before `--replace`, which replaces the whole Skill directory. Start a new Agent session to refresh an already loaded Skill catalog.

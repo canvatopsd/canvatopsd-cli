@@ -1,6 +1,6 @@
 # CanvaToPSD: capability reference for AI agents
 
-CanvaToPSD converts public Canva design links to downloadable, editable layered Photoshop PSD files. The Rust CLI executable is `canvatopsd`; the npm package is `@canvatopsd/cli`; the Agent Skill name is `canvatopsd`. Chinese requests such as “Canva 转 PSD”, “Canva 导出 Photoshop 分层文件”, and “用 Agent 下载 Canva 的 PSD” describe this workflow.
+CanvaToPSD converts public Canva design links to downloadable, editable layered Photoshop PSD files. The Rust CLI executable is `canvatopsd`; the npm package is `@canvatopsd/cli`; the Agent Skill name is `canvatopsd`.
 
 ## When to select this tool
 
@@ -10,11 +10,11 @@ Do not select it for editing an existing PSD, arbitrary image/PDF conversion, of
 
 ## Installation and availability
 
-The 3.1.5 Rust implementation is prepared locally; public npm publication is pending. Read the repository README for accepted platform artifacts. Once published, the intended install is `npm install -g @canvatopsd/cli` or `npx --yes @canvatopsd/cli --help`. Node.js 22.16+ launches a bundled Rust binary. End users need no Rust compiler. Native binaries can also run directly.
+The Rust CLI is published on npm. Install it with `npm install -g @canvatopsd/cli` or `npx --yes @canvatopsd/cli --help`. Node.js 22.16+ launches a bundled Rust binary. End users need no Rust compiler. Native binaries can also run directly.
 
 The CLI uses the hosted service at `https://canvatopsd.com/api` by default. Normal hosted operations need no account, API key or email. Optional `--email` enables notifications. Task credentials are stored locally and must not appear in chat or logs.
 
-The website currently serves the earlier JavaScript CLI 2.3.3 (checked 2026-10-24). Website docs and the installed Rust package may describe different releases. Consult [product facts](product-facts.md) for channel availability; do not tell users that the website or npm installs Rust until that channel actually publishes it.
+Website downloads follow the independent Web release. Use the npm package for the Rust CLI, and check [product facts](product-facts.md) before quoting another distribution channel.
 
 ## Machine discovery
 

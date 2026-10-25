@@ -78,15 +78,15 @@ This flow requires API support for taskToken and optional email. An older API re
 
 ## Installation and Skill
 
-The npm package is `@canvatopsd/cli`; the executable is `canvatopsd`. Install the currently deployed official download with:
+The npm package is `@canvatopsd/cli`; the executable is `canvatopsd`. Install the published Rust package with:
 
 ```sh
-npm install -g https://canvatopsd.com/agent/cli.tgz
+npm install -g @canvatopsd/cli
 canvatopsd --version
 canvatopsd skill install codex
 ```
 
-The website package follows the Web deployment version. Once the scoped package is publicly published to npm, package-name installation and npx become available:
+Website downloads follow the independent Web release. For the Rust CLI, use the scoped npm package or run it without a global installation:
 
 ```sh
 npx --yes @canvatopsd/cli --help

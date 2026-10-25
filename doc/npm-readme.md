@@ -4,24 +4,23 @@ Convert a **Canva public view link into a layered Photoshop PSD** from your term
 
 CanvaToPSD preserves supported editable text and separates images and artwork into layers. It supports static single-page and multi-page designs.
 
-[Website](https://canvatopsd.com/) · [Agent setup](https://canvatopsd.com/ai-agent) · [Real conversion examples](https://canvatopsd.com/showcases) · [Pricing](https://canvatopsd.com/pricing) · [中文使用文档](https://canvatopsd.com/agent/doc/usage.md)
+[Website](https://canvatopsd.com/) · [Agent setup](https://canvatopsd.com/ai-agent) · [Real conversion examples](https://canvatopsd.com/showcases) · [Pricing](https://canvatopsd.com/pricing) · [Usage guide](usage.md)
 
 ## Install
 
 Requires **Node.js 22.16 or later**. Supported platforms: macOS Apple Silicon (ARM64), Linux ARM64/x64 and Windows ARM64/x64. macOS Intel is unsupported. No Photoshop installation, Canva account login, API key or CanvaToPSD account is required for the ordinary conversion workflow. The CLI uses the hosted CanvaToPSD service and needs an internet connection for conversion and download.
 
-The Rust 3.0 release is prepared locally and has not been published to npm. Install the checked macOS ARM64 archive from this repository:
+Install the published package from the public npm registry:
 
 ```sh
-npm install -g ./releases/canvatopsd-cli-3.1.5.tgz
+npm install -g @canvatopsd/cli
 canvatopsd --version
 canvatopsd doctor
 ```
 
-The npm package name is `@canvatopsd/cli`; the executable is `canvatopsd`. Once the package is publicly available on the npm registry, you can also install or run it with:
+The npm package name is `@canvatopsd/cli`; the executable is `canvatopsd`. Run it without a global installation:
 
 ```sh
-npm install -g @canvatopsd/cli
 npx --yes @canvatopsd/cli --help
 ```
 
@@ -53,7 +52,7 @@ canvatopsd download TASK --page 3 --out ./page3.psd
 
 If conversion times out, keep the returned task ID and resume with `canvatopsd wait TASK`. Do not submit a second conversion just to continue waiting. Output files are never overwritten.
 
-See [platform availability](product-facts.md) before distributing this version. The hosted download URL may still serve an earlier JavaScript release.
+See [platform availability](product-facts.md) for system requirements and distribution channels.
 
 ## Use with an AI agent
 
@@ -106,7 +105,7 @@ The CLI stores task access credentials locally in `~/.config/canvatopsd/config.j
 - [Documentation index](index.md)
 - [Product facts and channel availability](product-facts.md)
 - [Complete command reference](command-reference.md)
-- [Full usage guide / 中文使用文档](usage.md)
+- [Full usage guide](usage.md)
 - [Bundled Agent Skill](../skills/canvatopsd/SKILL.md)
 - [Bundled detailed operations](../skills/canvatopsd/references/operations.md)
 - [Create a Canva public view link](https://canvatopsd.com/canva-sharing)

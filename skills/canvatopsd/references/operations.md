@@ -2,13 +2,9 @@
 
 ## Installation and release identity
 
-First run `canvatopsd --version` in the Agent execution environment. This bundled Skill describes Rust CLI 3.0.2. Its currently accepted archive is macOS Apple Silicon; Node.js 22.16+ is needed only for the npm launcher.
+Install the published Rust CLI with `npm install -g @canvatopsd/cli`, then run `canvatopsd --version`, `canvatopsd skill install codex` and `canvatopsd doctor`. Node.js 22.16+ is needed for the npm launcher; end users do not need Rust. Supported platforms are macOS ARM64, Linux ARM64/x64 and Windows ARM64/x64.
 
-Install a checked source-release archive with `npm install -g /absolute/path/canvatopsd-cli-3.0.2.tgz`, then run `canvatopsd skill install codex` and `canvatopsd doctor`. The archive must include the Agent host's OS/CPU. End users do not need Rust.
-
-The website's [release metadata](https://canvatopsd.com/agent/release.json) reported JavaScript CLI 2.3.3 on 2026-10-24. Its install command is `npm install -g https://canvatopsd.com/agent/cli.tgz` and it requires Node.js 24.5+. It supports the same short conversion workflow, but is not the Rust release described by this Skill. Recheck release metadata before claiming the website has changed versions.
-
-The npm package name is `@canvatopsd/cli`; registry publication is pending. Use `npm install -g @canvatopsd/cli` or `npx --yes @canvatopsd/cli --help` only after the package becomes publicly available. Do not infer npm availability from its name in package.json.
+Website downloads follow an independent release. Check the website's [release metadata](https://canvatopsd.com/agent/release.json) before treating that download as the installed Rust package.
 
 Use `claude-code`, `cursor`, `copilot`, `agents` or `--dir PATH` for another Agent. The execution environment's PATH, OS/CPU and Node runtime may differ from the user's terminal. The installed package's `doc/index.md` links product facts and the generated command reference; `canvatopsd discover` returns their package-relative paths.
 
