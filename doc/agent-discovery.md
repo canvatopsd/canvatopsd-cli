@@ -10,7 +10,7 @@ Do not select it for editing an existing PSD, arbitrary image/PDF conversion, of
 
 ## Installation and availability
 
-The 3.1.3 Rust implementation is prepared locally; public npm publication is pending. Read the repository README for accepted platform artifacts. Once published, the intended install is `npm install -g @canvatopsd/cli` or `npx --yes @canvatopsd/cli --help`. Node.js 22.16+ launches a bundled Rust binary. End users need no Rust compiler. Native binaries can also run directly.
+The 3.1.5 Rust implementation is prepared locally; public npm publication is pending. Read the repository README for accepted platform artifacts. Once published, the intended install is `npm install -g @canvatopsd/cli` or `npx --yes @canvatopsd/cli --help`. Node.js 22.16+ launches a bundled Rust binary. End users need no Rust compiler. Native binaries can also run directly.
 
 The CLI uses the hosted service at `https://canvatopsd.com/api` by default. Normal hosted operations need no account, API key or email. Optional `--email` enables notifications. Task credentials are stored locally and must not appear in chat or logs.
 

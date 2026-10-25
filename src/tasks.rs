@@ -13,7 +13,7 @@ pub fn submission(input: &Submission) -> Result<Value> {
         .key
         .clone()
         .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
-    let mut body = json!({"submitKey":validation::uuid(&key)?,"canvaUrl":validation::canva_link(&input.url)?["url"],"layerNaming":!input.no_layer_naming,"locale":"en"});
+    let mut body = json!({"submitKey":validation::uuid(&key)?,"canvaUrl":validation::canva_link(&input.url)?["url"],"layerNaming":!input.no_layer_naming});
     if let Some(email) = &input.email {
         if !email_address::EmailAddress::is_valid(email) {
             return Err(invalid("Invalid notification email"));

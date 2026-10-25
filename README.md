@@ -11,7 +11,7 @@ Use it to move a Canva design into Photoshop, automate Canva-to-PSD exports, sel
 The Rust 3.0 release is prepared locally; it is **not yet published to the public npm registry**. Install a checked archive for your platform:
 
 ```sh
-npm install -g ./releases/canvatopsd-cli-3.1.3.tgz
+npm install -g ./releases/canvatopsd-cli-3.1.5.tgz
 canvatopsd --version
 canvatopsd --help
 ```
@@ -122,7 +122,7 @@ Use `status TASK` or `wait TASK`. After an uncertain submission response, reuse 
 
 ### Is the Rust CLI already available on npm?
 
-This repository prepares version 3.1.3 for npm. Public registry publication is a separate release action. Until publication and platform acceptance are complete, use the checked platform archive or build from source.
+This repository prepares version 3.1.5 for npm. Public registry publication is a separate release action. Until publication and platform acceptance are complete, use the checked platform archive or build from source.
 
 ## Documentation and support
 
