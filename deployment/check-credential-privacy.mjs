@@ -26,7 +26,7 @@ export async function checkCredentialPrivacy(binary) {
     );
   const powershell = (script) =>
     execFileSync(
-      "powershell.exe",
+      "pwsh",
       ["-NoProfile", "-NonInteractive", "-Command", script],
       {
         env: { ...env, CANVATOPSD_PRIVACY_DIRECTORY: directory },
