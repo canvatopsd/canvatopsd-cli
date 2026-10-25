@@ -1,0 +1,40 @@
+[package]
+name = "canvatopsd-cli"
+version = "3.0.6"
+edition = "2024"
+rust-version = "1.85"
+description = "Canva to PSD CLI for AI agents: convert public Canva links to editable layered Photoshop files"
+license = "LicenseRef-Proprietary"
+homepage = "https://canvatopsd.com/ai-agent"
+readme = "README.md"
+keywords = ["canva", "psd", "photoshop", "cli", "ai-agent"]
+categories = ["command-line-utilities", "multimedia::images"]
+publish = false
+
+[[bin]]
+name = "canvatopsd"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4.5", features = ["derive", "string"] }
+dirs = "6"
+fs2 = "0.4"
+hex = "0.4"
+email_address = "0.2"
+rand = "0.9"
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "native-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tempfile = "3"
+url = "2"
+uuid = { version = "1", features = ["v4"] }
+
+[build-dependencies]
+serde_json = "1"
+
+[profile.release]
+lto = "thin"
+strip = true

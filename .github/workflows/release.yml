@@ -1,0 +1,98 @@
+name: Build and verify release
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the checked archive to npm
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: darwin-arm64, runner: macos-14 }
+          - { target: darwin-x64, runner: macos-15-intel }
+          - { target: linux-x64, runner: ubuntu-22.04 }
+          - { target: linux-arm64, runner: ubuntu-24.04-arm }
+          - { target: win32-x64, runner: windows-2022 }
+          - { target: win32-arm64, runner: windows-11-arm }
+    runs-on: ${{ matrix.runner }}
+    env:
+      CANVATOPSD_BUILD_TARGETS: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.97.1
+          components: rustfmt, clippy
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libssl-dev pkg-config
+      - run: npm ci --cache .tmp/npm-cache
+      - run: npm run check
+      - run: npm run build
+      - run: npm run accept:platform
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.target }}
+          path: .tmp/build/cli/runtime/
+          include-hidden-files: true
+          if-no-files-found: error
+  archive:
+    needs: native
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci --cache .tmp/npm-cache
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-*
+          merge-multiple: true
+          path: .tmp/native
+      - name: Pack accepted platform binaries
+        env:
+          CANVATOPSD_NATIVE_INPUT: ${{ github.workspace }}/.tmp/native
+          CANVATOPSD_BUILD_TARGETS: darwin-arm64,darwin-x64,linux-arm64,linux-x64,win32-arm64,win32-x64
+        run: npm pack
+      - run: npm run release:npm -- --dry-run
+      - id: metadata
+        run: node --input-type=module -e 'import fs from "node:fs"; const p = JSON.parse(fs.readFileSync("package.json")); fs.appendFileSync(process.env.GITHUB_OUTPUT, `archive=releases/canvatopsd-cli-${p.version}.tgz\n`);'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-release
+          path: ${{ steps.metadata.outputs.archive }}
+          if-no-files-found: error
+  publish:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main'
+    needs: archive
+    runs-on: ubuntu-22.04
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.6.2
+      - run: npm ci --cache .tmp/npm-cache
+      - uses: actions/download-artifact@v4
+        with:
+          name: npm-release
+          path: releases
+      - run: npm run release:npm

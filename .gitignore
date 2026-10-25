@@ -1,0 +1,22 @@
+# Local dependencies and repository temporary files
+node_modules/
+.tmp/
+
+# npm lifecycle output; source README.md remains tracked
+/runtime/
+/release.json
+
+# Local credentials and configuration
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+.npmrc.local
+
+# OS and editor files
+.DS_Store
+._*
+*.swp
+*.swo
+*~

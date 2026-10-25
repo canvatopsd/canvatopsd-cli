@@ -1,0 +1,4 @@
+interface:
+  display_name: "Canva to PSD"
+  short_description: "Convert Canva designs to layered Photoshop PSDs"
+  default_prompt: "Use $canvatopsd to convert this public Canva link, show the preview and checkout link, then download the PSD after I pay."

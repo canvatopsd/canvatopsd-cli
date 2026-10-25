@@ -1,0 +1,136 @@
+{
+  "name": "@canvatopsd/cli",
+  "version": "3.0.6",
+  "description": "Canva to PSD converter CLI for AI agents. Export public Canva designs to editable layered Photoshop PSDs with Rust, JSON commands, verified downloads and bundled Agent Skills.",
+  "type": "module",
+  "bin": {
+    "canvatopsd": "bin/canvatopsd.mjs"
+  },
+  "files": [
+    "bin",
+    "runtime",
+    "doc/index.md",
+    "doc/product-facts.md",
+    "doc/command-reference.md",
+    "doc/agent-discovery.md",
+    "doc/npm-readme.md",
+    "doc/usage.md",
+    "skills",
+    "release.json",
+    "LICENSE.md",
+    "doc/readme.zh-CN.md",
+    "codemeta.json"
+  ],
+  "engines": {
+    "node": ">=22.16.0"
+  },
+  "scripts": {
+    "build": "node deployment/build.mjs",
+    "check": "node deployment/check-source.mjs",
+    "check:release": "node deployment/check-release.mjs",
+    "deploy:local": "node deployment/deploy-local.mjs",
+    "format": "cargo-fmt fmt && prettier --write README.md AGENTS.md codemeta.json LICENSE.md releases/README.md .github bin deployment doc skills package.json",
+    "prepack": "node deployment/package-npm.mjs prepare",
+    "postpack": "node deployment/package-npm.mjs clean",
+    "check:npm-release": "node deployment/check-npm-archive.mjs",
+    "prepublishOnly": "node deployment/check-publish.mjs",
+    "build:npm": "node deployment/build-matrix.mjs",
+    "version": "node deployment/sync-version.mjs",
+    "doc:commands": "node deployment/generate-command-reference.mjs",
+    "accept:platform": "node deployment/accept-platform.mjs",
+    "release:npm": "node deployment/publish-npm.mjs"
+  },
+  "devDependencies": {
+    "prettier": "3.9.9",
+    "tar": "7.5.22"
+  },
+  "homepage": "https://canvatopsd.com/ai-agent",
+  "keywords": [
+    "canva",
+    "canva-to-psd",
+    "canva-to-photoshop",
+    "canva-export",
+    "canva-converter",
+    "psd",
+    "layered-psd",
+    "editable-psd",
+    "photoshop",
+    "rust-cli",
+    "cli",
+    "ai-agent",
+    "agent-skills",
+    "codex",
+    "claude-code",
+    "cursor",
+    "automation",
+    "design-automation"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "author": {
+    "name": "CanvaToPSD",
+    "url": "https://canvatopsd.com",
+    "email": "support@canvatopsd.com"
+  },
+  "bugs": {
+    "email": "support@canvatopsd.com",
+    "url": "https://github.com/canvatopsd/canvatopsd-cli/issues"
+  },
+  "license": "UNLICENSED",
+  "canvatopsd": {
+    "runtime": "rust",
+    "publishTargets": [
+      "darwin-arm64",
+      "darwin-x64",
+      "linux-arm64",
+      "linux-x64",
+      "win32-arm64",
+      "win32-x64"
+    ],
+    "capabilities": [
+      "public-canva-link-to-layered-psd",
+      "selected-design-pages",
+      "conversion-status-and-resume",
+      "conversion-previews",
+      "hosted-checkout-links",
+      "verified-psd-and-font-downloads",
+      "task-credential-backup",
+      "offline-agent-command-discovery"
+    ],
+    "inputFormats": [
+      "Canva public view URL",
+      "canva.link share URL",
+      "existing CanvaToPSD task UUID"
+    ],
+    "outputFormats": [
+      "layered Photoshop PSD",
+      "WebP preview",
+      "JSON layer preview",
+      "font ZIP",
+      "font listing TXT"
+    ],
+    "documentation": {
+      "index": "doc/index.md",
+      "facts": "doc/product-facts.md",
+      "commands": "doc/command-reference.md",
+      "agentSelection": "doc/agent-discovery.md",
+      "skill": "skills/canvatopsd/SKILL.md"
+    },
+    "service": {
+      "endpoint": "https://canvatopsd.com/api",
+      "conversion": "hosted",
+      "preview": "free",
+      "downloads": "paid",
+      "accountRequired": false,
+      "apiKeyRequiredForHostedWorkflow": false,
+      "emailRequired": false,
+      "payment": "user completes hosted checkout"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/canvatopsd/canvatopsd-cli.git"
+  }
+}

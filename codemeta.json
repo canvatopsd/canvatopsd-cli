@@ -1,0 +1,39 @@
+{
+  "@context": "https://w3id.org/codemeta/3.0",
+  "@type": "SoftwareSourceCode",
+  "name": "CanvaToPSD CLI and Agent Skill",
+  "description": "Convert Canva public view links to layered Photoshop PSD files. CLI and Skill for AI agents and automation.",
+  "codeRepository": "https://github.com/canvatopsd/canvatopsd-cli",
+  "url": "https://canvatopsd.com/ai-agent",
+  "issueTracker": "https://github.com/canvatopsd/canvatopsd-cli/issues",
+  "programmingLanguage": ["Rust", "JavaScript"],
+  "runtimePlatform": "Native Rust executable; npm launcher requires Node.js >=22.16.0",
+  "applicationCategory": "DesignApplication",
+  "keywords": [
+    "canva",
+    "canva-to-psd",
+    "canva-export",
+    "psd",
+    "layered-psd",
+    "photoshop",
+    "cli",
+    "ai-agent",
+    "agent-skill",
+    "automation",
+    "agent-skills",
+    "codex",
+    "claude-code",
+    "cursor",
+    "canva-to-photoshop"
+  ],
+  "author": [
+    {
+      "@type": "Organization",
+      "name": "CanvaToPSD",
+      "url": "https://canvatopsd.com",
+      "email": "support@canvatopsd.com"
+    }
+  ],
+  "softwareHelp": "https://github.com/canvatopsd/canvatopsd-cli/blob/main/doc/agent-discovery.md",
+  "softwareVersion": "3.0.6"
+}

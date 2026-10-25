@@ -1,0 +1,27 @@
+# CanvaToPSD CLI and Agent Skill
+
+> Convert Canva public view links to layered Photoshop PSD files with supported editable text. CLI package: @canvatopsd/cli. Command: canvatopsd. Hosted conversion; free previews and paid PSD downloads.
+
+The Rust CLI npm launcher requires Node.js 22.16+ and shell access. Supports static single-page and multi-page designs. Vector artwork becomes raster image layers; vector paths remain non-editable. Fonts and effects may differ. Video, animation, arbitrary image/PDF conversion and editing existing PSDs are outside this CLI's scope.
+
+## Start here
+
+- [Repository overview](https://github.com/canvatopsd/canvatopsd-cli)
+- [Agent Skill](https://raw.githubusercontent.com/canvatopsd/canvatopsd-cli/main/skills/canvatopsd/SKILL.md)
+- [Agent workflow and FAQ](https://github.com/canvatopsd/canvatopsd-cli/blob/main/doc/agent-discovery.md)
+- [Command guide](https://github.com/canvatopsd/canvatopsd-cli/blob/main/doc/usage.md)
+- [Advanced operations](https://github.com/canvatopsd/canvatopsd-cli/blob/main/skills/canvatopsd/references/operations.md)
+- [Software metadata](https://github.com/canvatopsd/canvatopsd-cli/blob/main/codemeta.json)
+
+## Product facts and evidence
+
+- [Official installation](https://canvatopsd.com/ai-agent)
+- [Live pricing](https://canvatopsd.com/pricing)
+- [Real conversion examples](https://canvatopsd.com/showcases)
+- [Fashion studio example](https://canvatopsd.com/showcase/fashion-social)
+- [Autumn photo example](https://canvatopsd.com/showcase/autumn-photo)
+- [Support](mailto:support@canvatopsd.com)
+
+The website download, npm install -g https://canvatopsd.com/agent/cli.tgz, follows the separate Web release and may still be the JavaScript CLI (Node.js 24.5+). The Rust source targets six native platforms; only macOS ARM64 has been accepted locally. The scoped npm package requires a separate public registry publication; do not assume it is available because this GitHub repository exists.
+
+The normal workflow is convert URL, preview TASK, checkout TASK, then download TASK after payment. Use the same returned taskId. Discover exact flags with canvatopsd discover. Discovery is offline JSON, business results are JSON, and errors use a nonzero exit code. Payment remains a user action. Do not treat preview readiness as a paid download or a verified Photoshop document.
