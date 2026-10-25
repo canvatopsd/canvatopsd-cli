@@ -25,7 +25,7 @@ Source lives in `src/`, the npm launcher in `bin/`, build and deployment tools i
 
 Keep Git authorship suitable for public distribution. This repository uses the public CanvaToPSD support identity. Do not commit local backups, credentials, customer artifacts or internal acceptance records.
 
-Public documentation and bundled Agent instructions are English-only. Final release checks reject Chinese characters in packaged text files.
+Public documentation and bundled Agent instructions are English-only. Final release checks decode packaged text as strict UTF-8 and reject non-ASCII letters and replacement characters. English text may use typographic punctuation.
 
 Argument errors expose the error category and schema-generated usage, never raw argument values. Credential files use mode 0600 on Unix. Windows uses a protected DACL granting full control only to the current process user, without inherited access rules. Existing configuration files are restricted before reading; temporary configuration and exported credentials are restricted before writing. Permission failures stop the command. Native platform acceptance verifies legacy configuration migration, export permissions and credential-safe argument errors using synthetic data, including Windows x64 and ARM64.
 
