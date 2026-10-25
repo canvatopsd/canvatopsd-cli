@@ -1,6 +1,22 @@
 use serde_json::{Value, json};
 use std::fmt;
 
+pub fn argument_error(error: &clap::Error) -> Value {
+    let reason = error.kind().as_str().unwrap_or("Invalid command arguments");
+    let mut value = CommandError::new(
+        "invalid_input",
+        format!("{reason}. Run canvatopsd COMMAND --help for usage."),
+    )
+    .value();
+    // Usage comes from the command schema; other Clap contexts can contain credentials.
+    if let Some(clap::error::ContextValue::StyledStr(usage)) =
+        error.get(clap::error::ContextKind::Usage)
+    {
+        value["usage"] = json!(usage.to_string());
+    }
+    value
+}
+
 #[derive(Debug)]
 pub struct CommandError {
     pub code: String,

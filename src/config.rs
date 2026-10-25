@@ -48,8 +48,11 @@ pub fn state_path() -> Result<PathBuf> {
     })
 }
 pub fn read() -> Result<Settings> {
-    match fs::read(state_path()?) {
-        Ok(content) => Ok(serde_json::from_slice(&content).context("Invalid configuration JSON")?),
+    match fs::File::open(state_path()?) {
+        Ok(file) => {
+            private_permissions_file(&file, 0o600)?;
+            Ok(serde_json::from_reader(file).context("Invalid configuration JSON")?)
+        }
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(Settings::default()),
         Err(error) => Err(error.into()),
     }
@@ -93,6 +96,7 @@ pub fn update<T>(change: impl FnOnce(&mut Settings) -> Result<T>) -> Result<T> {
     let mut settings = read()?;
     let result = change(&mut settings)?;
     let mut temporary = tempfile::NamedTempFile::new_in(parent)?;
+    private_permissions_file(temporary.as_file(), 0o600)?;
     use std::io::Write;
     writeln!(temporary, "{}", serde_json::to_string_pretty(&settings)?)?;
     temporary.as_file().sync_all()?;
@@ -101,7 +105,15 @@ pub fn update<T>(change: impl FnOnce(&mut Settings) -> Result<T>) -> Result<T> {
     Ok(result)
 }
 pub fn private_permissions(path: &std::path::Path, mode: u32) -> Result<()> {
-    private_permissions_file(&std::fs::File::open(path)?, mode)
+    #[cfg(windows)]
+    {
+        let _ = mode;
+        crate::windows_permissions::protect_path(path)
+    }
+    #[cfg(unix)]
+    {
+        private_permissions_file(&std::fs::File::open(path)?, mode)
+    }
 }
 pub fn private_permissions_file(file: &std::fs::File, mode: u32) -> Result<()> {
     #[cfg(unix)]
@@ -109,9 +121,10 @@ pub fn private_permissions_file(file: &std::fs::File, mode: u32) -> Result<()> {
         use std::os::unix::fs::PermissionsExt;
         file.set_permissions(fs::Permissions::from_mode(mode))?;
     }
-    #[cfg(not(unix))]
+    #[cfg(windows)]
     {
-        let _ = (file, mode);
+        let _ = mode;
+        crate::windows_permissions::protect_file(file)?;
     }
     Ok(())
 }

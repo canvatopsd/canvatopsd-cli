@@ -9,6 +9,8 @@ mod payment;
 mod skill;
 mod tasks;
 mod validation;
+#[cfg(windows)]
+mod windows_permissions;
 
 use anyhow::Result;
 use args::{Cli, Command, Operator, Payment, Selection};
@@ -221,7 +223,7 @@ fn main() {
             return;
         }
         Err(error) => {
-            emit_error(CommandError::new("invalid_input", error.to_string()).value());
+            emit_error(error::argument_error(&error));
         }
     };
     match run(cli) {

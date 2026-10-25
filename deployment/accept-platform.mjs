@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { build } from "./paths.mjs";
 import { targets, hostTarget } from "./targets.mjs";
 import { checkRelease } from "./check-release.mjs";
+import { checkCredentialPrivacy } from "./check-credential-privacy.mjs";
 
 await checkRelease(build);
 const release = JSON.parse(await readFile(join(build, "release.json"), "utf8"));
@@ -26,6 +27,7 @@ const result = JSON.parse(
   ),
 );
 if (!result.ok) throw new Error("Native submission dry-run failed");
+await checkCredentialPrivacy(binary);
 const receipt = {
   target: hostTarget,
   version: release.version,

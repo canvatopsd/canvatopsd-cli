@@ -23,6 +23,8 @@ When this checkout is nested inside another repository, place npm's cache in tha
 
 Keep Git authorship suitable for public distribution. This repository uses the public CanvaToPSD support identity. Do not commit local backups, credentials, customer artifacts or internal acceptance records.
 
+Argument errors expose the error category and schema-generated usage, never raw argument values. Credential files use mode 0600 on Unix. Windows uses a protected DACL granting full control only to the current process user, without inherited access rules. Existing configuration files are restricted before reading; temporary configuration and exported credentials are restricted before writing. Permission failures stop the command. Native platform acceptance verifies legacy configuration migration, export permissions and credential-safe argument errors using synthetic data, including Windows x64 and ARM64.
+
 ## Platform artifacts
 
 The default build targets the host. Local development acceptance runs on macOS ARM64; each CI release independently verifies its declared native targets. `deployment/targets.mjs` defines the five intended targets: macOS ARM64, Linux ARM64/x64 and Windows ARM64/x64; public npm publication requires all of them. Each platform must be built and exercised with its matching toolchain and runtime.
