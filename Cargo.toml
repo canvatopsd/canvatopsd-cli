@@ -1,10 +1,10 @@
 [package]
 name = "canvatopsd-cli"
-version = "3.1.6"
+version = "3.1.7"
 edition = "2024"
 rust-version = "1.85"
 description = "Canva to PSD CLI for AI agents: convert public Canva links to editable layered Photoshop files"
-license = "LicenseRef-Proprietary"
+license = "MIT"
 homepage = "https://canvatopsd.com/ai-agent"
 readme = "README.md"
 keywords = ["canva", "psd", "photoshop", "cli", "ai-agent"]

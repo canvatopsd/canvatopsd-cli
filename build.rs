@@ -12,6 +12,7 @@ fn main() {
     let mut product = json!({
         "name": "CanvaToPSD",
         "package": manifest["name"],
+        "license": manifest["license"],
         "description": manifest["description"],
         "homepage": manifest["homepage"]
     });

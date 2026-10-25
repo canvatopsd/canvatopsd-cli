@@ -93,4 +93,4 @@ Video, animation, interactive content, arbitrary image/PDF conversion and editin
 - [Build and development](doc/development.md) · [Release checklist](doc/releasing.md)
 - [Issues](https://github.com/canvatopsd/canvatopsd-cli/issues) · [Support](mailto:support@canvatopsd.com)
 
-Source is publicly readable under [LICENSE.md](LICENSE.md) and is not released under an open-source license. Report security issues privately to support@canvatopsd.com; omit task tokens, credential files and private links from public reports.
+The CLI, bundled Agent Skill and included documentation are licensed under the [MIT License](LICENSE.md). Use of the hosted service is governed by its [service terms](https://canvatopsd.com/terms). Report security issues privately to support@canvatopsd.com; omit task tokens, credential files and private links from public reports.

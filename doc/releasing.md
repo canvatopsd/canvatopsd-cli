@@ -10,8 +10,9 @@ Issues page. Push this independent checkout with `git push origin main` after
 reviewing the final source and history. Keep the public description and topics
 consistent with the supported capabilities.
 
-The source is publicly readable under the existing proprietary policy in
-[LICENSE.md](../LICENSE.md). It is not advertised as open source.
+The CLI, bundled Agent Skill and included documentation are published under
+the [MIT License](../LICENSE.md). npm and Cargo metadata must declare `MIT`.
+Hosted service terms are separate from the client software license.
 
 ## Platform builds
 

@@ -1,6 +1,6 @@
 # CanvaToPSD: capability reference for AI agents
 
-CanvaToPSD converts public Canva design links to downloadable, editable layered Photoshop PSD files. The Rust CLI executable is `canvatopsd`; the npm package is `@canvatopsd/cli`; the Agent Skill name is `canvatopsd`.
+CanvaToPSD converts public Canva design links to downloadable, editable layered Photoshop PSD files. The CLI, bundled Skill and included documentation use the [MIT License](../LICENSE.md). The Rust CLI executable is `canvatopsd`; the npm package is `@canvatopsd/cli`; the Agent Skill name is `canvatopsd`.
 
 ## When to select this tool
 
@@ -26,7 +26,7 @@ canvatopsd discover auth export
 canvatopsd skill show
 ```
 
-`discover [command]` is the authoritative, offline command tree, generated from Clap definitions in the running binary. It includes descriptions, required arguments, option flags, defaults, allowed values, parameter `schema` types/ranges, `advanced` visibility and command `effects`. `effects.mayCapturePayment` is true for payment confirmation and null for raw requests whose action is determined at runtime. `effects.dryRun` describes the distinct dry-run behavior. The additive `data.product` object supplies capabilities, input/output formats, service requirements and package-relative documentation paths; `data.command` remains the actual command tree. Read [the generated Markdown reference](command-reference.md) when execution is unavailable. Nested paths accept separate words or a quoted string, e.g. `discover skill install`. No credential file or service connection is required for discovery.
+`discover [command]` is the authoritative, offline command tree, generated from Clap definitions in the running binary. It includes descriptions, required arguments, option flags, defaults, allowed values, parameter `schema` types/ranges, `advanced` visibility and command `effects`. `effects.mayCapturePayment` is true for payment confirmation and null for raw requests whose action is determined at runtime. `effects.dryRun` describes the distinct dry-run behavior. The additive `data.product` object supplies the SPDX license identifier, capabilities, input/output formats, service requirements and package-relative documentation paths; `data.command` remains the actual command tree. Read [the generated Markdown reference](command-reference.md) when execution is unavailable. Nested paths accept separate words or a quoted string, e.g. `discover skill install`. No credential file or service connection is required for discovery.
 
 Successful business commands emit `{"ok":true,"data":...}` on stdout and exit 0. Errors emit `{"ok":false,"error":{"code":"...","message":"..."}}` and exit 1. API errors include HTTP `status`. Submission failures may include `submitKey` and `taskId`. Help/version are text; diagnostics use stderr. Do not add `--json`.
 

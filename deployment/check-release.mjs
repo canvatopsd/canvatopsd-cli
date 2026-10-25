@@ -90,6 +90,7 @@ export async function checkRelease(
   if (
     manifest.name !== source.name ||
     manifest.version !== source.version ||
+    manifest.license !== source.license ||
     release.version !== source.version ||
     release.runtime !== "rust" ||
     manifest.private ||
@@ -99,6 +100,11 @@ export async function checkRelease(
     manifest.publishConfig?.registry !== "https://registry.npmjs.org/"
   )
     throw new Error("Invalid Rust npm release manifest");
+  if (
+    (await readFile(join(directory, "LICENSE.md"), "utf8")) !==
+    (await readFile(join(unit, "LICENSE.md"), "utf8"))
+  )
+    throw new Error("Packaged license differs from the source license");
   if (
     !Array.isArray(release.targets) ||
     !release.targets.length ||
@@ -200,6 +206,7 @@ export async function checkRelease(
     );
   if (
     rootDiscovery.data.product?.package !== manifest.name ||
+    rootDiscovery.data.product?.license !== manifest.license ||
     rootDiscovery.data.product?.homepage !== manifest.homepage
   )
     throw new Error("Agent product discovery differs from npm metadata");
