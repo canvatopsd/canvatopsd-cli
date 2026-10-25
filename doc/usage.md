@@ -122,7 +122,7 @@ Replace VERSION with the actual version. The package includes the README, usage 
 
 Maintainers publish the exact checked archive using `npm run release:npm`.
 `npm run release:npm -- --dry-run` verifies publication readiness without publishing.
-All six targets need native acceptance receipts matching the source revision,
+All five targets need native acceptance receipts matching the source revision,
 version and binary digest. See the [source release checklist](https://github.com/canvatopsd/canvatopsd-cli/blob/main/doc/releasing.md).
 Publishing requires access to the npm scope and a fresh immutable version.
 If packaging is interrupted, run `npm run postpack` before retrying.

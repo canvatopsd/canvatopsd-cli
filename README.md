@@ -11,7 +11,7 @@ Use it to move a Canva design into Photoshop, automate Canva-to-PSD exports, sel
 The Rust 3.0 release is prepared locally; it is **not yet published to the public npm registry**. Install a checked archive for your platform:
 
 ```sh
-npm install -g ./releases/canvatopsd-cli-3.1.1.tgz
+npm install -g ./releases/canvatopsd-cli-3.1.2.tgz
 canvatopsd --version
 canvatopsd --help
 ```
@@ -26,8 +26,8 @@ npx --yes @canvatopsd/cli --help
 
 npm installation requires Node.js 22.16 or later. End users do not need Rust or Cargo. The npm launcher starts a bundled native executable without downloading code during installation. A directly installed native binary runs without Node.js. The conversion service requires an internet connection.
 
-Release targets are macOS, Linux and Windows on ARM64/x64. Every public npm
-release requires native CI acceptance for all six targets; check the linked CI
+Release targets are macOS on Apple Silicon (ARM64), and Linux/Windows on ARM64 or x64. macOS Intel (x64) is unsupported. Every public npm
+release requires native CI acceptance for all five targets; check the linked CI
 run for the exact source revision. Local development acceptance runs on macOS
 Apple Silicon. Linux uses GNU libc and OpenSSL 3, with Ubuntu 22.04 for x64 and
 Ubuntu 24.04 for ARM64 as the CI baseline; Alpine/musl is unsupported.
@@ -122,7 +122,7 @@ Use `status TASK` or `wait TASK`. After an uncertain submission response, reuse 
 
 ### Is the Rust CLI already available on npm?
 
-This repository prepares version 3.1.1 for npm. Public registry publication is a separate release action. Until publication and platform acceptance are complete, use the checked platform archive or build from source.
+This repository prepares version 3.1.2 for npm. Public registry publication is a separate release action. Until publication and platform acceptance are complete, use the checked platform archive or build from source.
 
 ## Documentation and support
 

@@ -34,8 +34,8 @@ Source release and CI acceptance are version-specific. Website distribution was 
 
 | Channel                  | State                                                                                                                        |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| This source release      | Rust 3.1.1; accepted local target is macOS Apple Silicon (`darwin-arm64`)                                                    |
-| Local install archive    | `releases/canvatopsd-cli-3.1.1.tgz` after the checked release build                                                          |
+| This source release      | Rust 3.1.2; accepted local target is macOS Apple Silicon (`darwin-arm64`)                                                    |
+| Local install archive    | `releases/canvatopsd-cli-3.1.2.tgz` after the checked release build                                                          |
 | Website CLI distribution | The public [release metadata](https://canvatopsd.com/agent/release.json) reported 2.3.3; it is an earlier JavaScript release |
 | Public npm registry      | The package metadata request returned HTTP 404; this Rust release has not been published                                     |
 | Other Rust platforms     | Build definitions exist; native execution acceptance is pending                                                              |

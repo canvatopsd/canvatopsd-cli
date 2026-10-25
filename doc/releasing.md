@@ -16,7 +16,7 @@ The source is publicly readable under the existing proprietary policy in
 ## Platform builds
 
 The workflow at `.github/workflows/release.yml` is relative to this standalone
-repository. It runs six native runners, checks source and final artifacts,
+repository. It runs five native runners, checks source and final artifacts,
 executes offline discovery, Skill installation and submission dry-run, and
 records the binary SHA-256, source revision and version in `acceptance.json`.
 The aggregation job checks every receipt before its npm publication dry-run.
@@ -49,7 +49,7 @@ never publish. No public remote or account permissions are assumed by source.
 1. Complete all source, metadata, README and Skill edits before versioning.
 2. Use a fresh immutable version (`npm version patch --no-git-tag-version`),
    regenerate `npm run doc:commands`, format, check, then commit the source.
-3. Run the workflow. All six platforms must pass and the aggregate archive must
+3. Run the workflow. All five platforms must pass and the aggregate archive must
    pass privacy, architecture, version, documentation and acceptance checks.
 4. Download the checked archive and exercise the installed CLI against prod:
    `doctor`, one authorized design submission, preview, status/resume, and a

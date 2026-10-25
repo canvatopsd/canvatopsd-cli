@@ -8,12 +8,12 @@ CanvaToPSD preserves supported editable text and separates images and artwork in
 
 ## Install
 
-Requires **Node.js 22.16 or later**. No Photoshop installation, Canva account login, API key or CanvaToPSD account is required for the ordinary conversion workflow. The CLI uses the hosted CanvaToPSD service and needs an internet connection for conversion and download.
+Requires **Node.js 22.16 or later**. Supported platforms: macOS Apple Silicon (ARM64), Linux ARM64/x64 and Windows ARM64/x64. macOS Intel is unsupported. No Photoshop installation, Canva account login, API key or CanvaToPSD account is required for the ordinary conversion workflow. The CLI uses the hosted CanvaToPSD service and needs an internet connection for conversion and download.
 
 The Rust 3.0 release is prepared locally and has not been published to npm. Install the checked macOS ARM64 archive from this repository:
 
 ```sh
-npm install -g ./releases/canvatopsd-cli-3.1.1.tgz
+npm install -g ./releases/canvatopsd-cli-3.1.2.tgz
 canvatopsd --version
 canvatopsd doctor
 ```

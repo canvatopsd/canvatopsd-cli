@@ -22,6 +22,6 @@ The Rust CLI npm launcher requires Node.js 22.16+ and shell access. Supports sta
 - [Autumn photo example](https://canvatopsd.com/showcase/autumn-photo)
 - [Support](mailto:support@canvatopsd.com)
 
-The website download, npm install -g https://canvatopsd.com/agent/cli.tgz, follows the separate Web release and may still be the JavaScript CLI (Node.js 24.5+). The Rust source targets six native platforms; only macOS ARM64 has been accepted locally. The scoped npm package requires a separate public registry publication; do not assume it is available because this GitHub repository exists.
+The website download, npm install -g https://canvatopsd.com/agent/cli.tgz, follows the separate Web release and may still be the JavaScript CLI (Node.js 24.5+). The Rust source targets five native platforms; only macOS ARM64 has been accepted locally. The scoped npm package requires a separate public registry publication; do not assume it is available because this GitHub repository exists.
 
 The normal workflow is convert URL, preview TASK, checkout TASK, then download TASK after payment. Use the same returned taskId. Discover exact flags with canvatopsd discover. Discovery is offline JSON, business results are JSON, and errors use a nonzero exit code. Payment remains a user action. Do not treat preview readiness as a paid download or a verified Photoshop document.

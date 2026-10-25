@@ -25,7 +25,7 @@ Keep Git authorship suitable for public distribution. This repository uses the p
 
 ## Platform artifacts
 
-The default build targets the host. Local development acceptance runs on macOS ARM64; each CI release independently verifies its declared native targets. `deployment/targets.mjs` defines the six intended macOS/Linux/Windows ARM64/x64 targets; public npm publication requires all of them. Each platform must be built and exercised with its matching toolchain and runtime.
+The default build targets the host. Local development acceptance runs on macOS ARM64; each CI release independently verifies its declared native targets. `deployment/targets.mjs` defines the five intended targets: macOS ARM64, Linux ARM64/x64 and Windows ARM64/x64; public npm publication requires all of them. Each platform must be built and exercised with its matching toolchain and runtime.
 
 Set `CANVATOPSD_BUILD_TARGETS` to a comma-separated list of target names. For externally built, accepted binaries, set `CANVATOPSD_NATIVE_INPUT` to a directory containing `<target>/canvatopsd` or `<target>/canvatopsd.exe`. The final privacy and format checks also apply to externally supplied binaries.
 
@@ -40,7 +40,7 @@ Public release metadata contains the version, public source revision, runtime, t
 ## Automated public release
 
 See [public release checklist](releasing.md). The workflow builds and executes
-all six platforms before aggregation. `npm run accept:platform` records native
+all five platforms before aggregation. `npm run accept:platform` records native
 offline acceptance; `npm run release:npm -- --dry-run` checks the complete archive,
 and `npm run release:npm` publishes that exact archive. Public publication requires
 native acceptance receipts for every target and the same source revision.

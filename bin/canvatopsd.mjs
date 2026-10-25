@@ -2,8 +2,21 @@
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import metadata from "../package.json" with { type: "json" };
 
 const target = `${process.platform}-${process.arch}`;
+if (!metadata.canvatopsd.publishTargets.includes(target)) {
+  console.log(
+    JSON.stringify({
+      ok: false,
+      error: {
+        code: "unsupported_platform",
+        message: `Unsupported platform: ${target}. Supported platforms: ${metadata.canvatopsd.publishTargets.join(", ")}.`,
+      },
+    }),
+  );
+  process.exit(1);
+}
 const executable =
   process.platform === "win32" ? "canvatopsd.exe" : "canvatopsd";
 const path = fileURLToPath(
