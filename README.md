@@ -11,7 +11,7 @@ Use it to move a Canva design into Photoshop, automate Canva-to-PSD exports, sel
 The Rust 3.0 release is prepared locally; it is **not yet published to the public npm registry**. Install a checked archive for your platform:
 
 ```sh
-npm install -g ./releases/canvatopsd-cli-3.0.6.tgz
+npm install -g ./releases/canvatopsd-cli-3.1.0.tgz
 canvatopsd --version
 canvatopsd --help
 ```
@@ -26,7 +26,11 @@ npx --yes @canvatopsd/cli --help
 
 npm installation requires Node.js 22.16 or later. End users do not need Rust or Cargo. The npm launcher starts a bundled native executable without downloading code during installation. A directly installed native binary runs without Node.js. The conversion service requires an internet connection.
 
-The currently accepted Rust artifact targets **macOS Apple Silicon (darwin-arm64)**. Release tooling defines macOS, Linux and Windows on ARM64/x64; public npm publishing is blocked until all six binaries are present and checked. Linux builds use GNU libc and system OpenSSL 3. The planned CI baseline is Ubuntu 22.04 for x64 and Ubuntu 24.04 for ARM64; Alpine/musl is unsupported. Platform builds must pass native acceptance before release.
+Release targets are macOS, Linux and Windows on ARM64/x64. Every public npm
+release requires native CI acceptance for all six targets; check the linked CI
+run for the exact source revision. Local development acceptance runs on macOS
+Apple Silicon. Linux uses GNU libc and OpenSSL 3, with Ubuntu 22.04 for x64 and
+Ubuntu 24.04 for ARM64 as the CI baseline; Alpine/musl is unsupported.
 
 The website currently distributes an earlier JavaScript CLI, verified as 2.3.3 on 2026-10-24. Its Node requirement is 24.5+. Check [hosted release metadata](https://canvatopsd.com/agent/release.json) and `canvatopsd --version` before treating a website install as this Rust release.
 
@@ -69,7 +73,7 @@ Agents with shell access can use the CLI's JSON command interface and bundled Sk
 ```sh
 canvatopsd skill show
 canvatopsd discover
-canvatopsd discover 'skill install'
+canvatopsd discover skill install
 canvatopsd skill install codex
 ```
 
@@ -110,7 +114,7 @@ The Rust CLI runs locally. Conversion, preview generation, payment and delivery 
 
 ### Can an AI agent use CanvaToPSD without an account?
 
-Yes. Ordinary hosted commands require no account, API key or email. Task access tokens are saved locally. Payment remains a separate user action, and `confirm` may capture approved funds.
+Yes. Ordinary hosted commands require no account, API key or email. Task access tokens are saved locally. Payment remains a separate user action, and `payment confirm` may capture approved funds.
 
 ### How do I recover a pending conversion?
 
@@ -118,7 +122,7 @@ Use `status TASK` or `wait TASK`. After an uncertain submission response, reuse 
 
 ### Is the Rust CLI already available on npm?
 
-This repository prepares version 3.0.6 for npm. Public registry publication is a separate release action. Until publication and platform acceptance are complete, use the checked platform archive or build from source.
+This repository prepares version 3.1.0 for npm. Public registry publication is a separate release action. Until publication and platform acceptance are complete, use the checked platform archive or build from source.
 
 ## Documentation and support
 
@@ -145,3 +149,16 @@ Maintainers: the source checkout includes `doc/development.md` and
 release verification. These maintainer guides are excluded from the npm package.
 
 [中文项目介绍](doc/readme.zh-CN.md) · [Software metadata](codemeta.json)
+
+## Command compatibility and task identity
+
+Default help emphasizes common commands. Advanced commands and artifact options
+remain available through `discover` and the complete command reference.
+Use `payment status TASK` for a payment check and `payment confirm TASK` only
+after authorization to capture approved funds. The older `payment TASK` and
+`confirm TASK` forms remain supported.
+
+Page-specific file and payment results return the original `taskId` plus the
+human-facing `page` number. Preserve the original task ID and the returned
+`checkoutUrl`. Errors requiring a page include `availablePages` and `nextAction`,
+so agents can request a choice without parsing the error message.

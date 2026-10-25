@@ -13,7 +13,7 @@ Requires **Node.js 22.16 or later**. No Photoshop installation, Canva account lo
 The Rust 3.0 release is prepared locally and has not been published to npm. Install the checked macOS ARM64 archive from this repository:
 
 ```sh
-npm install -g ./releases/canvatopsd-cli-3.0.6.tgz
+npm install -g ./releases/canvatopsd-cli-3.1.0.tgz
 canvatopsd --version
 canvatopsd doctor
 ```
@@ -75,7 +75,7 @@ Agents can inspect commands without accessing the network or credentials:
 ```sh
 canvatopsd discover
 canvatopsd discover convert
-canvatopsd discover 'skill install'
+canvatopsd discover skill install
 canvatopsd skill show
 ```
 

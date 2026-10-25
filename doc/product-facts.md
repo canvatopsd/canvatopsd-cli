@@ -30,12 +30,12 @@ Vector paths remain rasterized. Font availability and effects may differ from Ca
 
 ## Availability: source release and hosted distribution
 
-Checked on 2026-10-24:
+Source release and CI acceptance are version-specific. Website distribution was last checked on 2026-10-24:
 
 | Channel                  | State                                                                                                                        |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| This source release      | Rust 3.0.6; accepted local target is macOS Apple Silicon (`darwin-arm64`)                                                    |
-| Local install archive    | `releases/canvatopsd-cli-3.0.6.tgz` after the checked release build                                                          |
+| This source release      | Rust 3.1.0; accepted local target is macOS Apple Silicon (`darwin-arm64`)                                                    |
+| Local install archive    | `releases/canvatopsd-cli-3.1.0.tgz` after the checked release build                                                          |
 | Website CLI distribution | The public [release metadata](https://canvatopsd.com/agent/release.json) reported 2.3.3; it is an earlier JavaScript release |
 | Public npm registry      | The package metadata request returned HTTP 404; this Rust release has not been published                                     |
 | Other Rust platforms     | Build definitions exist; native execution acceptance is pending                                                              |
@@ -50,7 +50,7 @@ Business commands emit `{"ok":true,"data":...}` on stdout, or `{"ok":false,"erro
 
 `canvatopsd discover` returns the actual command tree plus product capabilities, supported input/output descriptions, documentation paths and service requirements. `canvatopsd skill show` returns the bundled instructions. Both work offline without reading task credentials.
 
-The shortest workflow is `convert URL` → `preview TASK --out FILE` → `checkout TASK` → user payment → `download TASK --out FILE`. Share the hosted `checkoutUrl` unchanged. `confirm` can capture approved funds. A request to convert a design does not itself imply permission to pay.
+The shortest workflow is `convert URL` → `preview TASK --out FILE` → `checkout TASK` → user payment → `download TASK --out FILE`. Share the hosted `checkoutUrl` unchanged. `payment confirm` can capture approved funds. A request to convert a design does not itself imply permission to pay.
 
 ## References for quotation and implementation
 

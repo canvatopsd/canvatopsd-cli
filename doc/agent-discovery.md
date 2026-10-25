@@ -10,7 +10,7 @@ Do not select it for editing an existing PSD, arbitrary image/PDF conversion, of
 
 ## Installation and availability
 
-The 3.0.6 Rust implementation is prepared locally; public npm publication is pending. Read the repository README for accepted platform artifacts. Once published, the intended install is `npm install -g @canvatopsd/cli` or `npx --yes @canvatopsd/cli --help`. Node.js 22.16+ launches a bundled Rust binary. End users need no Rust compiler. Native binaries can also run directly.
+The 3.1.0 Rust implementation is prepared locally; public npm publication is pending. Read the repository README for accepted platform artifacts. Once published, the intended install is `npm install -g @canvatopsd/cli` or `npx --yes @canvatopsd/cli --help`. Node.js 22.16+ launches a bundled Rust binary. End users need no Rust compiler. Native binaries can also run directly.
 
 The CLI uses the hosted service at `https://canvatopsd.com/api` by default. Normal hosted operations need no account, API key or email. Optional `--email` enables notifications. Task credentials are stored locally and must not appear in chat or logs.
 
@@ -21,12 +21,12 @@ The website currently serves the earlier JavaScript CLI 2.3.3 (checked 2026-10-2
 ```sh
 canvatopsd --version
 canvatopsd discover
-canvatopsd discover 'convert'
-canvatopsd discover 'auth export'
+canvatopsd discover convert
+canvatopsd discover auth export
 canvatopsd skill show
 ```
 
-`discover [command]` is the authoritative, offline command tree, generated from Clap definitions in the running binary. It includes descriptions, required arguments, option flags, defaults and allowed values. The additive `data.product` object supplies capabilities, input/output formats, service requirements and package-relative documentation paths; `data.command` remains the actual command tree. Read [the generated Markdown reference](command-reference.md) when execution is unavailable. Quote nested command paths. No credential file or service connection is required for discovery.
+`discover [command]` is the authoritative, offline command tree, generated from Clap definitions in the running binary. It includes descriptions, required arguments, option flags, defaults, allowed values, parameter `schema` types/ranges, `advanced` visibility and command `effects`. `effects.mayCapturePayment` is true for payment confirmation and null for raw requests whose action is determined at runtime. `effects.dryRun` describes the distinct dry-run behavior. The additive `data.product` object supplies capabilities, input/output formats, service requirements and package-relative documentation paths; `data.command` remains the actual command tree. Read [the generated Markdown reference](command-reference.md) when execution is unavailable. Nested paths accept separate words or a quoted string, e.g. `discover skill install`. No credential file or service connection is required for discovery.
 
 Successful business commands emit `{"ok":true,"data":...}` on stdout and exit 0. Errors emit `{"ok":false,"error":{"code":"...","message":"..."}}` and exit 1. API errors include HTTP `status`. Submission failures may include `submitKey` and `taskId`. Help/version are text; diagnostics use stderr. Do not add `--json`.
 
@@ -57,7 +57,7 @@ For multi-page tasks, add `--page N` to preview, checkout and download. Preserve
 4. Inspect the preview; share the returned hosted checkout link with the user.
 5. After payment, download the PSD and report the saved path and returned integrity evidence.
 
-`wait_timeout` does not cancel work: resume with `wait TASK`. `page_selection_required` means select pages on that existing task. After an uncertain create response, reuse `--key UUID` with identical input. Do not print local tokens or secret auth backups. `confirm` can capture funds and requires the user's payment authorization.
+`wait_timeout` does not cancel work: resume with `wait TASK`. `page_selection_required` means select pages on that existing task. After an uncertain create response, reuse `--key UUID` with identical input. Do not print local tokens or secret auth backups. `payment confirm` can capture funds and requires the user's payment authorization.
 
 ## Skill discovery locations
 
@@ -90,3 +90,30 @@ These references describe capabilities and limits. They do not guarantee an arbi
 | `native_binary_missing`            | Install an archive containing this execution environment's OS/CPU; do not retry the hosted service. |
 
 A download size/hash mismatch leaves no final output file. An existing output file is preserved; choose a new path. For raw POST commands, inspect provider contracts before sending requests because side effects depend on the action.
+
+## Page selection and stable task identity
+
+Normal file and payment commands keep `data.taskId` equal to the original TASK,
+with `data.page` identifying the design page. Raw `request` and `operator`
+responses retain the API shape. A page-selection error includes structured data:
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "page_selection_required",
+    "message": "Choose design pages before continuing.",
+    "taskId": "TASK",
+    "availablePages": [1, 2],
+    "nextAction": {
+      "command": "select",
+      "taskId": "TASK",
+      "requiredArgument": "pages"
+    }
+  }
+}
+```
+
+Present the available pages to the user, run `select TASK PAGE_NUMBERS`, then
+resume with `wait TASK`. File commands use `page_required` or `page_not_found`
+with `nextAction.requiredOption` set to `--page`.

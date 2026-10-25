@@ -25,7 +25,7 @@ Keep Git authorship suitable for public distribution. This repository uses the p
 
 ## Platform artifacts
 
-The default build targets the host. The currently accepted platform is macOS ARM64. `deployment/targets.mjs` defines the six intended macOS/Linux/Windows ARM64/x64 targets; public npm publication requires all of them. Each platform must be built and exercised with its matching toolchain and runtime.
+The default build targets the host. Local development acceptance runs on macOS ARM64; each CI release independently verifies its declared native targets. `deployment/targets.mjs` defines the six intended macOS/Linux/Windows ARM64/x64 targets; public npm publication requires all of them. Each platform must be built and exercised with its matching toolchain and runtime.
 
 Set `CANVATOPSD_BUILD_TARGETS` to a comma-separated list of target names. For externally built, accepted binaries, set `CANVATOPSD_NATIVE_INPUT` to a directory containing `<target>/canvatopsd` or `<target>/canvatopsd.exe`. The final privacy and format checks also apply to externally supplied binaries.
 

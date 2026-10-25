@@ -35,20 +35,20 @@ Convert writes its initial submission key to stderr before the request and inclu
 
 ## Common commands
 
-| Command                          | Purpose                                                                                   |
-| -------------------------------- | ----------------------------------------------------------------------------------------- |
-| `convert URL [--pages 1,3]`      | Submit and wait for previews; return the task ID used afterward                           |
-| `status TASK` / `wait TASK`      | Inspect selected pages / wait within a bounded deadline                                   |
-| `preview TASK --out FILE`        | Save a preview                                                                            |
-| `checkout TASK`                  | Create a checkout link for the user to pay                                                |
-| `download TASK --out FILE`       | Synchronize payment and download; verify size and SHA-256                                 |
-| `pages TASK` / `select TASK 1,3` | Inspect and select pages in a separate-step workflow                                      |
-| `payment TASK` / `confirm TASK`  | Synchronize payment separately / confirm an authorized payment; confirm may capture funds |
-| `files TASK`                     | List paid files                                                                           |
-| `create URL`                     | Submit only, without discovery or waiting                                                 |
-| `doctor`                         | Check API routing and the task-credential protocol                                        |
+| Command                                        | Purpose                                                                                   |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `convert URL [--pages 1,3]`                    | Submit and wait for previews; return the task ID used afterward                           |
+| `status TASK` / `wait TASK`                    | Inspect selected pages / wait within a bounded deadline                                   |
+| `preview TASK --out FILE`                      | Save a preview                                                                            |
+| `checkout TASK`                                | Create a checkout link for the user to pay                                                |
+| `download TASK --out FILE`                     | Synchronize payment and download; verify size and SHA-256                                 |
+| `pages TASK` / `select TASK 1,3`               | Inspect and select pages in a separate-step workflow                                      |
+| `payment status TASK` / `payment confirm TASK` | Synchronize payment separately / confirm an authorized payment; confirm may capture funds |
+| `files TASK`                                   | List paid files                                                                           |
+| `create URL`                                   | Submit only, without discovery or waiting                                                 |
+| `doctor`                                       | Check API routing and the task-credential protocol                                        |
 
-`preview`, `checkout`, `download`, `files`, `payment` and `confirm` support `--page NUMBER`. The normal workflow does not require a separate payment command.
+`preview`, `checkout`, `download`, `files`, `payment status` and `payment confirm` support `--page NUMBER`. The normal workflow does not require a separate payment command.
 
 `checkoutUrl` is a CanvaToPSD-hosted checkout entry. Give it to the user unchanged; do not substitute an old PayPal URL. It establishes a task cookie in the browser that opens it, then continues to the same PayPal order. This also works for existing orders and does not require opening a private task link first. The entry lasts seven days. Run checkout again to obtain a fresh entry without reconverting or creating another payment order. The API unit maintains the protocol in `doc/task-return-routing.md`.
 
@@ -72,7 +72,7 @@ canvatopsd auth import /absolute/task-access.json
 
 The export contains one task's secret credentials, uses mode 0600 and refuses overwrites. Do not upload it to Git or paste it into chat. When a child uses parent authorization, export the parent. Select the matching service endpoint before importing. Existing files containing emailed private links can still be imported, including language prefixes such as `zh-tw` and `pt-br`. `auth clear` removes cookies, retry tokens and parent/child relationships for the selected endpoint. Without email, losing both local credentials and backups prevents self-service access recovery.
 
-Payment remains task-based; an API key or email is not a payment requirement. Query `payment TASK` after the user approves payment. Run `confirm TASK` only with authorization to confirm payment. Payment webhooks can update status; existing task credentials continue to authorize downloads.
+Payment remains task-based; an API key or email is not a payment requirement. Query `payment status TASK` after the user approves payment. Run `payment confirm TASK` only with authorization to confirm payment. Payment webhooks can update status; existing task credentials continue to authorize downloads.
 
 This flow requires API support for taskToken and optional email. An older API rejects the request explicitly. The CLI still defaults to prod; API prod releases are separate.
 
@@ -157,17 +157,31 @@ Version 2.0 replaced task create/status/wait, page list/request, preview list/do
 canvatopsd --help
 canvatopsd create --help
 canvatopsd discover
-canvatopsd discover 'skill install'
+canvatopsd discover skill install
 canvatopsd skill show
 canvatopsd skill status codex
 # After reviewing and authorizing replacement of the installed Skill:
 canvatopsd skill install codex --replace
 ```
 
-`discover [command]` returns an offline JSON command tree. Arguments, options, required fields and defaults come directly from actual command definitions, with examples and side-effect guidance. Quote nested command paths. Discovery reads no credentials, connects to no service and submits no task. Replace example placeholders before execution.
+`discover [command]` returns an offline JSON command tree. Arguments, options, required fields and defaults come directly from actual command definitions, with examples and side-effect guidance. Nested paths accept separate words or a quoted string, e.g. `discover skill install`. Discovery reads no credentials, connects to no service and submits no task. Replace example placeholders before execution.
 
 Skill show returns the bundled entry document as JSON. Skill status compares installed and bundled files and reports missing or changed files. Current only means file equality; it does not establish that an agent loaded the Skill, PATH is correct or the service is healthy. A successful command in the target agent's terminal establishes that terminal can find the CLI. Start a new agent session after installation or updates to refresh discovery.
 
 Skill install --replace explicitly replaces the entire target Skill directory, including manual edits. The default refuses overwrites. Installation supports codex, claude-code, cursor, copilot, agents or a custom --dir. Codex uses CODEX_HOME/skills when configured. SKILL.md contains task selection, the shortest workflow and delivery conditions; credential recovery and advanced operations are loaded from references/operations.md as needed.
 
 A project can add this to its existing agent instructions: “Use the canvatopsd Skill for Canva to PSD conversion, task previews and downloads. Run canvatopsd discover for the command index.” This repository's entry is skills/canvatopsd/SKILL.md. No MCP server is needed for shell-based use; remote or shell-free integrations require separate evaluation.
+
+## Compatibility and advanced help
+
+Use `payment status TASK` and `payment confirm TASK`. Legacy `payment TASK` and
+`confirm TASK` remain supported. A payment confirmation may capture approved funds.
+The default help groups common commands; `create`, `files`, `init`, `resolve`,
+`operator` and `request` remain available by name. Internal `--artifact-page`,
+artifact `--file` names and `--origin` remain supported and appear in discovery
+and the generated full reference rather than default terminal help.
+
+Normal preview, download, file listing and payment results expose the original
+`taskId` and a design `page`. Page-selection errors provide `availablePages`
+and `nextAction`; ask the user to select from those values. Raw request and
+operator calls deliberately retain the provider response.

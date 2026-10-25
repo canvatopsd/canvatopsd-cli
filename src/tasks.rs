@@ -1,7 +1,7 @@
 use crate::{
     args::Submission,
     client::{Client, submit},
-    error::{invalid, task_error},
+    error::{invalid, page_error, task_error},
     validation::{self, array, field},
 };
 use anyhow::Result;
@@ -71,7 +71,26 @@ pub fn summary(status: &Value) -> Result<Value> {
         json!({"taskId":field(status,"taskId")?,"status":state,"inputRequired":requires_input(status) || pages.iter().any(requires_input),"message":if ready { json!("Selected pages are ready for preview") } else { status["message"].clone() },"pageSelectionRequired":status.get("selection").is_some_and(|v| !v.is_null() && v["confirmed"] != true),"pages":pages.iter().map(|v| json!({"number":v["pageStart"],"status":v["status"],"paymentState":v["paymentState"]})).collect::<Vec<_>>()}),
     )
 }
-pub fn quote(client: &mut Client, task: &str, page: Option<u32>) -> Result<Value> {
+pub struct TaskQuote {
+    pub input: Value,
+    pub page: u32,
+}
+
+pub fn public_result(mut value: Value, task: &str, page: u32) -> Result<Value> {
+    let object = value
+        .as_object_mut()
+        .ok_or_else(|| invalid("Expected an object response"))?;
+    object.insert("taskId".into(), json!(task));
+    object.insert("page".into(), json!(page));
+    Ok(value)
+}
+
+pub fn quote(
+    client: &mut Client,
+    task: &str,
+    page: Option<u32>,
+    command: &str,
+) -> Result<TaskQuote> {
     let mut status = read_status(client, task, None)?;
     if cancelled(&status) {
         return Err(task_error(
@@ -86,23 +105,23 @@ pub fn quote(client: &mut Client, task: &str, page: Option<u32>) -> Result<Value
         .filter(|v| page.is_none_or(|p| v["pageStart"] == p && v["pageEnd"] == p))
         .collect::<Vec<_>>();
     if candidates.len() != 1 {
-        return Err(task_error(
+        let available = pages
+            .iter()
+            .map(|v| validation::page_number(v, "pageStart"))
+            .collect::<Result<Vec<_>>>()?;
+        return Err(page_error(
             if page.is_none() {
                 "page_required"
             } else {
                 "page_not_found"
             },
-            format!(
-                "Specify --page with one of: {}",
-                pages
-                    .iter()
-                    .map(|v| v["pageStart"].to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
+            "Choose a design page from availablePages and repeat the command with --page N",
             task,
+            available,
+            json!({"command":command,"taskId":task,"requiredOption":"--page"}),
         ));
     }
+    let number = validation::page_number(candidates[0], "pageStart")?;
     let id = field(candidates[0], "taskId")?.to_owned();
     if id != task {
         status = read_status(client, &id, None)?;
@@ -115,7 +134,10 @@ pub fn quote(client: &mut Client, task: &str, page: Option<u32>) -> Result<Value
         ));
     }
     let quote = validation::uuid(field(&status["quote"], "quote_id")?)?;
-    Ok(json!({"taskId":validation::uuid(field(&status,"taskId")?)?,"quoteId":quote}))
+    Ok(TaskQuote {
+        input: json!({"taskId":validation::uuid(field(&status,"taskId")?)?,"quoteId":quote}),
+        page: number,
+    })
 }
 pub fn wait(
     client: &mut Client,
@@ -172,19 +194,25 @@ fn wait_until(
                 }
                 "ready" => {
                     let pages = array(&source, "pages")?;
+                    let available = pages
+                        .iter()
+                        .map(|v| validation::page_number(v, "index"))
+                        .collect::<Result<Vec<_>>>()?;
                     if requested.is_some_and(|selection| {
                         selection
                             .iter()
                             .any(|p| !pages.iter().any(|v| v["index"] == *p))
                     }) {
-                        return Err(task_error(
+                        return Err(page_error(
                             "page_out_of_bounds",
-                            format!("Choose page numbers from 1 to {}", pages.len()),
+                            "Choose design page numbers from availablePages",
                             task,
+                            available.clone(),
+                            json!({"command":"select","taskId":task,"requiredArgument":"pages"}),
                         ));
                     }
                     if source.get("autoTaskId").is_none_or(Value::is_null) {
-                        let selection = requested.ok_or_else(|| task_error("page_selection_required", format!("This design has {} pages. Run canvatopsd select {task} 1,3 then canvatopsd wait {task}", pages.len()), task))?;
+                        let selection = requested.ok_or_else(|| page_error("page_selection_required", format!("This design has {} pages. Choose from availablePages, run canvatopsd select {task} PAGE_NUMBERS, then canvatopsd wait {task}", pages.len()), task, available, json!({"command":"select","taskId":task,"requiredArgument":"pages"})))?;
                         submit(
                             client,
                             "/task/page-request/create",

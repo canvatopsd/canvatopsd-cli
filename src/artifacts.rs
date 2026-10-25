@@ -93,18 +93,20 @@ pub fn preview(
     if let Some(output) = output {
         ensure_new_file(output)?;
     }
-    let mut input = tasks::quote(client, task, page)?;
+    let quote = tasks::quote(client, task, page, "preview")?;
+    let mut input = quote.input;
     input["name"] = json!(file);
     let listing = client.json("/task/preview/list", &input)?;
     let Some(output) = output else {
-        return Ok(listing);
+        return tasks::public_result(listing, task, quote.page);
     };
     input["pageId"] = json!(select_page(array(&listing, "pages")?, artifact, page)?);
-    save(
+    let saved = save(
         client.post("/task/preview/read", &input, false, None)?,
         output,
         None,
-    )
+    )?;
+    tasks::public_result(saved, task, quote.page)
 }
 pub fn download(
     client: &mut Client,
@@ -115,7 +117,8 @@ pub fn download(
     output: &str,
 ) -> Result<Value> {
     ensure_new_file(output)?;
-    let mut input = tasks::quote(client, task, page)?;
+    let quote = tasks::quote(client, task, page, "download")?;
+    let mut input = quote.input;
     client.json("/task/checkout/read", &input)?;
     let listing = client.json("/task/delivery/read", &input)?;
     input["pageId"] = json!(select_page(array(&listing, "pages")?, artifact, page)?);
@@ -124,6 +127,7 @@ pub fn download(
     let response = client.download(field(&receipt, "url")?)?;
     let mut result = save(response, output, Some(&receipt))?;
     result["taskId"] = json!(task);
+    result["page"] = json!(quote.page);
     result["pageId"] = input["pageId"].clone();
     result["name"] = json!(file);
     Ok(result)
@@ -134,4 +138,10 @@ pub fn ensure_new_file(output: &str) -> Result<()> {
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
         Err(e) => Err(e.into()),
     }
+}
+
+pub fn files(client: &mut Client, task: &str, page: Option<u32>) -> Result<Value> {
+    let quote = tasks::quote(client, task, page, "files")?;
+    let listing = client.json("/task/delivery/read", &quote.input)?;
+    tasks::public_result(listing, task, quote.page)
 }

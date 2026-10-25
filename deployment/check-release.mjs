@@ -159,7 +159,18 @@ export async function checkRelease(
   if (run(["--version"]) !== source.version)
     throw new Error("Native version differs from npm version");
   run(["--help"]);
-  const discovery = JSON.parse(run(["discover", "skill install"]));
+  const discovery = JSON.parse(run(["discover", "skill", "install"]));
+  if (
+    JSON.stringify(discovery) !==
+    JSON.stringify(JSON.parse(run(["discover", "skill install"])))
+  )
+    throw new Error("Quoted and natural discovery paths differ");
+  const payment = JSON.parse(run(["discover", "payment", "confirm"]));
+  if (payment.data.command.effects.mayCapturePayment !== true)
+    throw new Error("Payment confirmation effects are missing");
+  const previewHelp = run(["preview", "--help"]);
+  if (previewHelp.includes("--artifact-page") || previewHelp.includes("--file"))
+    throw new Error("Default preview help exposes internal artifact options");
   if (
     !discovery.ok ||
     discovery.data.version !== source.version ||

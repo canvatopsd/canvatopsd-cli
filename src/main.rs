@@ -5,12 +5,13 @@ mod client;
 mod config;
 mod discovery;
 mod error;
+mod payment;
 mod skill;
 mod tasks;
 mod validation;
 
 use anyhow::Result;
-use args::{Cli, Command, Operator};
+use args::{Cli, Command, Operator, Payment, Selection};
 use clap::Parser;
 use client::Client;
 use error::{CommandError, submission_error};
@@ -24,7 +25,7 @@ fn run(cli: Cli) -> Result<Value> {
     let options = &cli.options;
     // Offline commands deliberately do not read credentials or initialize networking.
     match &cli.command {
-        Command::Discover { command } => return discovery::discover(command.as_deref()),
+        Command::Discover { command } => return discovery::discover(&command.join(" ")),
         Command::Skill { command } => return skill::run(command),
         Command::Resolve { url } => {
             let parsed = url::Url::parse(url).map_err(|_| error::invalid("Invalid URL"))?;
@@ -159,27 +160,25 @@ fn run(cli: Cli) -> Result<Value> {
             file,
             out,
         ),
-        Command::Files(selection)
-        | Command::Payment(selection)
-        | Command::Confirm(selection)
-        | Command::Checkout { selection, .. } => {
-            let mut body = tasks::quote(&mut client, &selection.task, selection.page)?;
-            let path = match cli.command {
-                Command::Files(_) => "/task/delivery/read",
-                Command::Payment(_) => "/task/checkout/read",
-                Command::Confirm(_) => "/task/checkout/confirm",
-                Command::Checkout { dry_run, .. } => {
-                    body["returnTaskId"] = json!(selection.task);
-                    if dry_run {
-                        return Ok(
-                            json!({"path":"/task/checkout/create","input":body,"dryRun":true}),
-                        );
-                    }
-                    "/task/checkout/create"
-                }
-                _ => unreachable!(),
-            };
-            client.json(path, &body)
+        Command::Files(selection) => artifacts::files(&mut client, &selection.task, selection.page),
+        Command::Payment(input) => {
+            if let Some(command) = &input.command {
+                payment::run(&mut client, command)
+            } else {
+                let selection = Selection {
+                    task: input.task.clone().ok_or_else(|| {
+                        error::invalid("Use payment status TASK or payment confirm TASK")
+                    })?,
+                    page: input.page,
+                };
+                payment::run(&mut client, &Payment::Status(selection))
+            }
+        }
+        Command::Confirm(selection) => {
+            payment::run(&mut client, &Payment::Confirm(selection.clone()))
+        }
+        Command::Checkout { selection, dry_run } => {
+            payment::checkout(&mut client, selection, *dry_run)
         }
         Command::Auth { command } => auth::run(&mut client, command),
         Command::Operator { command } => match command {

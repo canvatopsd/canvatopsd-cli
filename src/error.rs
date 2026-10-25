@@ -8,6 +8,8 @@ pub struct CommandError {
     pub status: Option<u16>,
     pub task_id: Option<String>,
     pub submit_key: Option<String>,
+    pub available_pages: Option<Vec<u32>>,
+    pub next_action: Option<Value>,
 }
 impl CommandError {
     pub fn new(code: &str, message: impl Into<String>) -> Self {
@@ -17,6 +19,8 @@ impl CommandError {
             status: None,
             task_id: None,
             submit_key: None,
+            available_pages: None,
+            next_action: None,
         }
     }
     pub fn value(&self) -> Value {
@@ -29,6 +33,12 @@ impl CommandError {
         }
         if let Some(key) = &self.submit_key {
             value["submitKey"] = json!(key);
+        }
+        if let Some(pages) = &self.available_pages {
+            value["availablePages"] = json!(pages);
+        }
+        if let Some(action) = &self.next_action {
+            value["nextAction"] = action.clone();
         }
         value
     }
@@ -67,4 +77,18 @@ pub fn network_error(error: reqwest::Error) -> anyhow::Error {
     // Preserve the underlying transport/TLS error without signed URLs or query credentials.
     let message = format!("{:#}", anyhow::Error::new(error.without_url()));
     CommandError::new(code, message).into()
+}
+
+pub fn page_error(
+    code: &str,
+    message: impl Into<String>,
+    task: &str,
+    pages: Vec<u32>,
+    next_action: Value,
+) -> anyhow::Error {
+    let mut error = CommandError::new(code, message);
+    error.task_id = Some(task.into());
+    error.available_pages = Some(pages);
+    error.next_action = Some(next_action);
+    error.into()
 }

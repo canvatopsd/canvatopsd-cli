@@ -114,3 +114,12 @@ pub fn secure_url(value: &str) -> Result<Url> {
     }
     Ok(url)
 }
+
+pub fn page_number(value: &Value, key: &str) -> Result<u32> {
+    value
+        .get(key)
+        .and_then(Value::as_u64)
+        .and_then(|n| u32::try_from(n).ok())
+        .filter(|n| *n > 0)
+        .ok_or_else(|| invalid(format!("Response is missing a positive page number: {key}")))
+}

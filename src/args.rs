@@ -1,7 +1,9 @@
 use clap::{Args, Parser, Subcommand};
 
+pub const MAX_REQUEST_SECONDS: u64 = 3600;
+
 #[derive(Parser)]
-#[command(name = "canvatopsd", version = env!("CARGO_PKG_VERSION"), about = "Canva to PSD CLI for AI agents. Convert public Canva links to editable layered Photoshop files. Business results are JSON.", after_help = "Start: canvatopsd discover | canvatopsd skill show\nWorkflow: convert URL → preview TASK --out FILE → checkout TASK → user payment → download TASK --out FILE\nMulti-page: convert URL --pages 1,3; then use --page 3. No --json flag is needed.")]
+#[command(name = "canvatopsd", version = env!("CARGO_PKG_VERSION"), about = "Canva to PSD CLI for AI agents. Convert public Canva links to editable layered Photoshop files. Business results are JSON.", subcommand_help_heading = "Common commands", after_help = "Start: canvatopsd discover | canvatopsd skill show\nWorkflow: convert URL → preview TASK --out FILE → checkout TASK → user payment → download TASK --out FILE\nMulti-page: convert URL --pages 1,3; then use --page 3. No --json flag is needed.\nAdvanced: create, files, init, resolve, operator, request. Use COMMAND --help or discover for details.")]
 pub struct Cli {
     #[command(flatten)]
     pub options: Options,
@@ -14,10 +16,10 @@ pub struct Options {
     #[arg(long, global = true)]
     pub base_url: Option<String>,
     /// Origin header matching the configured Web origin
-    #[arg(long, global = true)]
+    #[arg(long, global = true, hide = true)]
     pub origin: Option<String>,
     /// Per-request timeout in seconds
-    #[arg(long, global = true, default_value_t = 30, value_parser = clap::value_parser!(u64).range(1..=3600))]
+    #[arg(long, global = true, default_value_t = 30, value_parser = clap::value_parser!(u64).range(1..=MAX_REQUEST_SECONDS))]
     pub timeout: u64,
 }
 #[derive(Subcommand)]
@@ -34,6 +36,7 @@ pub enum Command {
         seconds: u64,
     },
     /// Submit a design and save task credentials; does not wait
+    #[command(hide = true)]
     Create(Submission),
     /// Read conversion progress and selected page numbers
     Status {
@@ -77,10 +80,10 @@ pub enum Command {
         #[arg(long)]
         out: Option<String>,
         /// Explicit internal artifact page ID; normally use --page instead
-        #[arg(long)]
+        #[arg(long, hide = true)]
         artifact_page: Option<String>,
         /// Preview artifact to list or save
-        #[arg(long, default_value = "preview.webp", value_parser = ["preview.webp", "preview-layers.webp", "preview-layers.json"])]
+        #[arg(long, hide = true, default_value = "preview.webp", value_parser = ["preview.webp", "preview-layers.webp", "preview-layers.json"])]
         file: String,
     },
     /// Synchronize payment and download a PSD or fonts; verify size and SHA-256
@@ -91,13 +94,14 @@ pub enum Command {
         #[arg(long)]
         out: String,
         /// Explicit internal artifact page ID; normally use --page instead
-        #[arg(long)]
+        #[arg(long, hide = true)]
         artifact_page: Option<String>,
         /// Paid PSD or font artifact to download
-        #[arg(long, default_value = "page-0001.psd", value_parser = ["page-0001.psd", "fonts.zip", "fonts.txt"])]
+        #[arg(long, hide = true, default_value = "page-0001.psd", value_parser = ["page-0001.psd", "fonts.zip", "fonts.txt"])]
         file: String,
     },
     /// List paid PSD and font files
+    #[command(hide = true)]
     Files(Selection),
     /// Create a hosted payment link; share checkoutUrl unchanged with the user
     Checkout {
@@ -107,18 +111,21 @@ pub enum Command {
         #[arg(long)]
         dry_run: bool,
     },
-    /// Read and synchronize payment state
-    Payment(Selection),
-    /// Confirm authorized payment; may capture approved funds
+    /// Read payment status or confirm an authorized payment
+    Payment(PaymentArgs),
+    /// Compatibility alias for payment confirm; may capture approved funds
+    #[command(hide = true)]
     Confirm(Selection),
     /// Check API protocol and configuration; submits no conversion jobs
     Doctor,
     /// Parse a public Canva link or private task link locally; no network
+    #[command(hide = true)]
     Resolve {
         /// Public Canva URL or private task URL to parse without networking
         url: String,
     },
     /// Save endpoint settings; defaults to prod
+    #[command(hide = true)]
     Init {
         /// HTTPS service endpoint, or loopback HTTP; defaults to prod
         url: Option<String>,
@@ -134,11 +141,13 @@ pub enum Command {
         command: Skill,
     },
     /// Direct API operator reads; requires CANVATOPSD_OPERATOR_TOKEN
+    #[command(hide = true)]
     Operator {
         #[command(subcommand)]
         command: Operator,
     },
     /// Send an explicit POST command; side effects depend on the API action
+    #[command(hide = true)]
     Request {
         /// POST command path such as /task/status
         path: String,
@@ -154,8 +163,9 @@ pub enum Command {
     },
     /// Offline JSON command index generated from actual command definitions
     Discover {
-        /// Quoted command path such as "skill install"; omit for the whole tree
-        command: Option<String>,
+        /// Command path, e.g. skill install; quoted paths remain supported
+        #[arg(num_args = 0..)]
+        command: Vec<String>,
     },
 }
 #[derive(Args)]
@@ -175,7 +185,7 @@ pub struct Submission {
     #[arg(long)]
     pub dry_run: bool,
 }
-#[derive(Args)]
+#[derive(Args, Clone)]
 pub struct Selection {
     /// Original task UUID returned by convert; reuse it for every selected page
     pub task: String,
@@ -239,4 +249,28 @@ pub enum Operator {
         /// Existing task UUID to inspect with operator authorization
         task: String,
     },
+}
+
+#[derive(Args)]
+#[command(
+    arg_required_else_help = true,
+    subcommand_precedence_over_arg = true,
+    args_conflicts_with_subcommands = true
+)]
+pub struct PaymentArgs {
+    #[command(subcommand)]
+    pub command: Option<Payment>,
+    /// Compatibility form: payment TASK [--page N]; prefer payment status TASK
+    pub task: Option<String>,
+    /// Original design page number for the compatibility form
+    #[arg(long, requires = "task", value_parser = clap::value_parser!(u32).range(1..))]
+    pub page: Option<u32>,
+}
+
+#[derive(Subcommand)]
+pub enum Payment {
+    /// Read and synchronize payment state
+    Status(Selection),
+    /// Confirm an authorized payment; may capture approved funds
+    Confirm(Selection),
 }

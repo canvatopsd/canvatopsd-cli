@@ -30,14 +30,25 @@ export async function commandReference(discovery) {
   function visit(command, parents) {
     const path = [...parents, command.name];
     sections.push(`## canvatopsd ${path.join(" ")}`, command.description || "");
+    if (command.advanced)
+      sections.push(
+        "Advanced or compatibility command; available through explicit invocation and discovery.",
+      );
+    if (command.effects)
+      sections.push(
+        `Network: ${command.effects.network ? "required" : "offline"}. Server action: ${command.effects.serverAction}.${command.effects.mayCapturePayment === true ? " May capture approved funds; requires payment authorization." : ""}`,
+      );
     const usage = [
       "canvatopsd",
       ...path,
       ...command.arguments.map((argument) =>
-        argument.required ? `<${argument.name}>` : `[${argument.name}]`,
+        argument.required
+          ? `<${argument.name}${argument.variadic ? "..." : ""}>`
+          : `[${argument.name}${argument.variadic ? "..." : ""}]`,
       ),
     ];
-    if (command.commands.length) usage.push("<COMMAND>");
+    if (command.commands.length)
+      usage.push(command.arguments.length ? "[COMMAND]" : "<COMMAND>");
     for (const option of command.options.filter((option) => option.required))
       usage.push(option.flags);
     if (
@@ -75,6 +86,10 @@ export async function commandReference(discovery) {
             option.default ?? "—",
             [
               option.description,
+              option.advanced ? "Advanced option." : "",
+              option.schema?.type === "integer"
+                ? `Integer; minimum ${option.schema.minimum}${option.schema.maximum !== undefined ? `; maximum ${option.schema.maximum}` : ""}.`
+                : "",
               option.choices?.length
                 ? `Allowed: ${option.choices.join(", ")}`
                 : "",
