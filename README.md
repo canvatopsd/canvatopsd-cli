@@ -37,6 +37,8 @@ canvatopsd download TASK --out ./design.psd
 
 Keep the same task ID throughout. Conversion and previews are free; PSD downloads require payment at the [current price](https://canvatopsd.com/pricing). An email address is optional for notifications.
 
+Optional `--locale CODE` on `convert` or `create` sets the task page and notification language on APIs supporting that field. Omit it to use the API default, English. It does not change PSD content or layer naming; see [the usage guide](doc/usage.md).
+
 For multiple pages, choose the design page numbers explicitly:
 
 ```sh

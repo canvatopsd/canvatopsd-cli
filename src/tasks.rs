@@ -20,6 +20,9 @@ pub fn submission(input: &Submission) -> Result<Value> {
         }
         body["email"] = json!(email.to_lowercase());
     }
+    if let Some(locale) = &input.locale {
+        body["locale"] = json!(locale);
+    }
     Ok(body)
 }
 pub fn selection(task: &str, pages: &str, key: Option<&str>) -> Result<Value> {
@@ -54,7 +57,7 @@ fn cancelled(status: &Value) -> bool {
     matches!(status["status"].as_str(), Some("cancelled" | "cancelling"))
 }
 fn requires_input(status: &Value) -> bool {
-    status["inputRequired"].as_bool().unwrap_or(false)
+    status["inputRequired"] == true || status["inputRequired"] == 1
 }
 pub fn summary(status: &Value) -> Result<Value> {
     let pages = conversion_pages(status)?;

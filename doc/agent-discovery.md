@@ -14,6 +14,8 @@ The Rust CLI is published on npm. Install it with `npm install -g @canvatopsd/cl
 
 The CLI uses the hosted service at `https://canvatopsd.com/api` by default. Normal hosted operations need no account, API key or email. Optional `--email` enables notifications. Task credentials are stored locally and must not appear in chat or logs.
 
+Optional `--locale CODE` on `convert` or `create` sets the task page and notification language on APIs supporting that field. Omit it to use the API default, English. It does not change PSD content or layer naming; see [the usage guide](usage.md).
+
 Website downloads follow the independent Web release. Use the npm package for the Rust CLI, and check [product facts](product-facts.md) before quoting another distribution channel.
 
 ## Machine discovery

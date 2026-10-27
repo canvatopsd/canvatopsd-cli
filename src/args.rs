@@ -2,6 +2,19 @@ use clap::{Args, Parser, Subcommand};
 
 pub const MAX_REQUEST_SECONDS: u64 = 3600;
 
+fn ui_locales() -> clap::builder::PossibleValuesParser {
+    let schema: serde_json::Value = serde_json::from_str(include_str!("ui-locale.schema.json"))
+        .expect("Bundled UI locale schema");
+    clap::builder::PossibleValuesParser::new(
+        schema["enum"]
+            .as_array()
+            .expect("UI locale codes")
+            .iter()
+            .map(|value| value.as_str().expect("UI locale code").to_owned())
+            .collect::<Vec<_>>(),
+    )
+}
+
 #[derive(Parser)]
 #[command(name = "canvatopsd", version = env!("CARGO_PKG_VERSION"), about = "Canva to PSD CLI for AI agents. Convert public Canva links to editable layered Photoshop files. Business results are JSON.", subcommand_help_heading = "Common commands", after_help = "Start: canvatopsd discover | canvatopsd skill show\nWorkflow: convert URL → preview TASK --out FILE → checkout TASK → user payment → download TASK --out FILE\nMulti-page: convert URL --pages 1,3; then use --page 3. No --json flag is needed.\nAdvanced: create, files, init, resolve, operator, request. Use COMMAND --help or discover for details.")]
 pub struct Cli {
@@ -175,6 +188,9 @@ pub struct Submission {
     /// Optional notification email
     #[arg(long)]
     pub email: Option<String>,
+    /// Task page and notification language; omission uses the API default
+    #[arg(long, value_parser = ui_locales())]
+    pub locale: Option<String>,
     /// Reuse this UUID after an uncertain response
     #[arg(long)]
     pub key: Option<String>,

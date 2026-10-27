@@ -216,6 +216,23 @@ export async function checkRelease(
     rootDiscovery.data.product?.homepage !== manifest.homepage
   )
     throw new Error("Agent product discovery differs from npm metadata");
+  const codemeta = JSON.parse(
+    await readFile(join(directory, "codemeta.json"), "utf8"),
+  );
+  const skillText = await readFile(
+    join(directory, "skills/canvatopsd/SKILL.md"),
+    "utf8",
+  );
+  if (
+    codemeta.softwareVersion !== source.version ||
+    !skillText.includes(`  version: "${source.version}"`) ||
+    !skillText.includes(
+      `bundled instructions describe Rust CLI ${source.version};`,
+    )
+  )
+    throw new Error(
+      "Skill or product metadata version differs from npm version",
+    );
   const skill = JSON.parse(run(["skill", "show"]));
   if (
     skill.data.content !==

@@ -6,6 +6,8 @@ CanvaToPSD preserves supported editable text and separates images and artwork in
 
 [Website](https://canvatopsd.com/) · [Agent setup](https://canvatopsd.com/ai-agent) · [Real conversion examples](https://canvatopsd.com/showcases) · [Pricing](https://canvatopsd.com/pricing) · [Usage guide](usage.md)
 
+Optional `--locale CODE` on `convert` or `create` sets the task page and notification language on APIs supporting that field. Omit it to use the API default, English. It does not change PSD content or layer naming; see [the usage guide](usage.md).
+
 ## Install
 
 Requires **Node.js 22.16 or later**. Supported platforms: macOS Apple Silicon (ARM64), Linux ARM64/x64 and Windows ARM64/x64. macOS Intel is unsupported. No Photoshop installation, Canva account login, API key or CanvaToPSD account is required for the ordinary conversion workflow. The CLI uses the hosted CanvaToPSD service and needs an internet connection for conversion and download.

@@ -31,7 +31,7 @@ The `convert --seconds 300` deadline covers discovery, page-selection submission
 
 A multi-page design without `--pages` returns `page_selection_required` and preserves the task. Run `select TASK 1,3`, then `wait TASK`. Existing tasks do not require another convert.
 
-Convert writes its initial submission key to stderr before the request and includes it in the result or error. After an uncertain response, retry with the original URL, page selection and `--key UUID`. Page selection uses the task ID as a stable idempotency key. A request that conflicts with an already confirmed selection fails explicitly instead of creating another set of pages. To resume waiting alone, use wait without resubmitting.
+Convert writes its initial submission key to stderr before the request and includes it in the result or error. After an uncertain response, retry with the original URL, page selection, email, locale, layer-naming settings and `--key UUID`. Page selection uses the task ID as a stable idempotency key. A request that conflicts with an already confirmed selection fails explicitly instead of creating another set of pages. To resume waiting alone, use wait without resubmitting.
 
 ## Common commands
 
@@ -59,6 +59,8 @@ Downloads default to `page-0001.psd`. Use `--file fonts.zip` or `--file fonts.tx
 ## Task credentials and optional email
 
 No account, API key or email is required. For each new submission, the CLI generates a separate random token and saves it in its local mode-0600 configuration before sending the request. The API stores only a hash and returns the task cookie. The token is never printed. A retry with `--key UUID` reuses the saved token. `auth status` lists saved submission keys. A submission key alone cannot issue replacement access credentials.
+
+`--locale CODE` on convert/create sets the task page and notification language, independently of PSD content and layer naming. Supported codes come from `discover convert` (for example `zh`, `zh-tw`, `pt-br`). Omission sends no locale field and uses the API default, English. Additional pages inherit their parent task language. Explicit locale requires an API release supporting that field; older strict schemas return `command_invalid`. Doctor does not negotiate locale support. Report rejection without silently changing the input or retrying a mutation.
 
 `--email EMAIL` enables email notifications. Without it, creation, conversion readiness, manual-input requests and payment produce no notification emails. Inspect required input through status/wait. Original credentials remain valid after readiness and payment; parent credentials authorize direct child tasks. The CLI sends only the target or parent credentials. Responses to select, pages and parent status save authorized relationships. For child tasks created by an older version, query parent status once to restore the relationship.
 
@@ -141,7 +143,7 @@ canvatopsd --base-url http://127.0.0.1:8797 operator task-list --offset 0
 canvatopsd request /task/status --body .tmp/request.json
 ```
 
-`operator notification-status TASK` reads notification records. Task lists use pages of 100. Request always uses POST; --operator adds operator authorization, and --out FILE saves binary data. The API provider maintains request structures under api/contracts/; the standalone CLI uses those definitions through the pinned @canvatopsd/client-contracts dependency. Raw commands can change business data and are not read-only diagnostics.
+`operator notification-status TASK` reads notification records. Task lists use pages of 100. Request always uses POST; --operator adds operator authorization, and --out FILE saves binary data. The API provider maintains request structures under api/contracts/. The standalone Rust CLI constructs requests directly and has no runtime TypeScript contracts dependency. Its src/ui-locale.schema.json is an explicit snapshot of the provider-owned language schema. Raw commands can change business data and are not read-only diagnostics.
 
 ## Output and errors
 
@@ -164,7 +166,7 @@ canvatopsd skill status codex
 canvatopsd skill install codex --replace
 ```
 
-`discover [command]` returns an offline JSON command tree. Arguments, options, required fields and defaults come directly from actual command definitions, with examples and side-effect guidance. Nested paths accept separate words or a quoted string, e.g. `discover skill install`. Discovery reads no credentials, connects to no service and submits no task. Replace example placeholders before execution.
+`discover [command]` returns an offline JSON command tree. Arguments, options, required fields and defaults come directly from actual command definitions, with parameter schemas and side-effect guidance. Nested paths accept separate words or a quoted string, e.g. `discover skill install`. Discovery reads no credentials, connects to no service and submits no task. Replace example placeholders before execution.
 
 Skill show returns the bundled entry document as JSON. Skill status compares installed and bundled files and reports missing or changed files. Current only means file equality; it does not establish that an agent loaded the Skill, PATH is correct or the service is healthy. A successful command in the target agent's terminal establishes that terminal can find the CLI. Start a new agent session after installation or updates to refresh discovery.
 
