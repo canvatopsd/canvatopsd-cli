@@ -1,6 +1,6 @@
 # CanvaToPSD CLI command reference
 
-Generated from Rust CLI 3.1.8 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
+Generated from Rust CLI 3.1.9 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
 
 Use this page to inspect every command without installing or executing the CLI. For capabilities, installation availability and pricing boundaries, read [product facts](product-facts.md). For task recovery and credential handling, read [Agent guidance](agent-discovery.md).
 
@@ -35,7 +35,7 @@ canvatopsd convert <url> [OPTIONS]
 | `--email <EMAIL>`     | no       | —       | Optional notification email                                                                                                                                                                                                  |
 | `--locale <LOCALE>`   | no       | —       | Task page and notification language; omission uses the API default Allowed: id, de, en, es, fr, it, pt-br, ru, ko, ja, zh, zh-tw, pl, hu, th, da, el, uk, ms, vi, sv, tr, cs, ro, lv, fi, bg, sr, sl, lt, et, nl, no, hr, sk |
 | `--key <KEY>`         | no       | —       | Reuse this UUID after an uncertain response                                                                                                                                                                                  |
-| `--no-layer-naming`   | no       | false   | Keep original layer names                                                                                                                                                                                                    |
+| `--no-layer-naming`   | no       | false   | Use local layer names without model naming                                                                                                                                                                                   |
 | `--dry-run`           | no       | false   | Validate locally without submitting or saving credentials                                                                                                                                                                    |
 | `--pages <numbers>`   | no       | —       | Design page numbers, e.g. 1,3; required for multi-page designs                                                                                                                                                               |
 | `--seconds <SECONDS>` | no       | 300     | Maximum wait after submission; timeout does not cancel conversion Integer; minimum 1.                                                                                                                                        |
@@ -61,7 +61,7 @@ canvatopsd create <url> [OPTIONS]
 | `--email <EMAIL>`   | no       | —       | Optional notification email                                                                                                                                                                                                  |
 | `--locale <LOCALE>` | no       | —       | Task page and notification language; omission uses the API default Allowed: id, de, en, es, fr, it, pt-br, ru, ko, ja, zh, zh-tw, pl, hu, th, da, el, uk, ms, vi, sv, tr, cs, ro, lv, fi, bg, sr, sl, lt, et, nl, no, hr, sk |
 | `--key <KEY>`       | no       | —       | Reuse this UUID after an uncertain response                                                                                                                                                                                  |
-| `--no-layer-naming` | no       | false   | Keep original layer names                                                                                                                                                                                                    |
+| `--no-layer-naming` | no       | false   | Use local layer names without model naming                                                                                                                                                                                   |
 | `--dry-run`         | no       | false   | Validate locally without submitting or saving credentials                                                                                                                                                                    |
 
 ## canvatopsd status

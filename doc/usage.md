@@ -62,6 +62,8 @@ No account, API key or email is required. For each new submission, the CLI gener
 
 `--locale CODE` on convert/create sets the task page and notification language, independently of PSD content and layer naming. Supported codes come from `discover convert` (for example `zh`, `zh-tw`, `pt-br`). Omission sends no locale field and uses the API default, English. Additional pages inherit their parent task language. Explicit locale requires an API release supporting that field; older strict schemas return `command_invalid`. Doctor does not negotiate locale support. Report rejection without silently changing the input or retrying a mutation.
 
+`--no-layer-naming` skips model naming; the service still assigns readable local type names and numbers while creating the PSD.
+
 `--email EMAIL` enables email notifications. Without it, creation, conversion readiness, manual-input requests and payment produce no notification emails. Inspect required input through status/wait. Original credentials remain valid after readiness and payment; parent credentials authorize direct child tasks. The CLI sends only the target or parent credentials. Responses to select, pages and parent status save authorized relationships. For child tasks created by an older version, query parent status once to restore the relationship.
 
 To back up credentials or move machines:

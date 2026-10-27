@@ -194,7 +194,7 @@ pub struct Submission {
     /// Reuse this UUID after an uncertain response
     #[arg(long)]
     pub key: Option<String>,
-    /// Keep original layer names
+    /// Use local layer names without model naming
     #[arg(long)]
     pub no_layer_naming: bool,
     /// Validate locally without submitting or saving credentials
