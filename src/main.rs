@@ -8,6 +8,7 @@ mod error;
 mod payment;
 mod skill;
 mod tasks;
+mod updates;
 mod validation;
 #[cfg(windows)]
 mod windows_permissions;
@@ -27,6 +28,7 @@ fn run(cli: Cli) -> Result<Value> {
     let options = &cli.options;
     // Offline commands deliberately do not read credentials or initialize networking.
     match &cli.command {
+        Command::Update { command } => return updates::run(command, options.timeout),
         Command::Discover { command, advanced } => {
             return discovery::discover(&command.join(" "), *advanced);
         }

@@ -122,6 +122,11 @@ pub enum Command {
     Confirm(Selection),
     /// Check API protocol and configuration; submits no conversion jobs
     Doctor,
+    /// Check whether a newer stable CLI release is available
+    Update {
+        #[command(subcommand)]
+        command: Update,
+    },
     /// Parse a public Canva link or private task link locally; no network
     #[command(hide = true)]
     Resolve {
@@ -200,6 +205,16 @@ pub struct Submission {
     /// Validate locally without submitting or saving credentials
     #[arg(long)]
     pub dry_run: bool,
+}
+
+#[derive(Subcommand)]
+pub enum Update {
+    /// Read the npm stable release without installing or changing settings
+    Check {
+        /// Registry origin for a managed npm installation
+        #[arg(long, hide = true, default_value = "https://registry.npmjs.org")]
+        registry: String,
+    },
 }
 #[derive(Args, Clone)]
 pub struct Selection {

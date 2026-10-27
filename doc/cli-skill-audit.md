@@ -26,3 +26,5 @@ Temporary CLI integration checks cover stable result fields, PSD/font formats, i
 ## Submission attribution in 3.2.1
 
 CLI submissions report their own version automatically. Agents pass `--agent NAME` and, when known, `--agent-version VERSION`. Attribution is explicit, retained from the first submission and inherited by child pages. It is excluded from the API content hash so a CLI update does not invalidate uncertain-submission recovery. Missing historical attribution stays unknown. The Skill does not guess Agent versions or send a model version as an application version.
+
+The Agent entry workflow runs `update check` once before hosted commands. It compares semantic versions against the npm stable tag, reports current/newer/ahead states, returns an exact installation command and does not install, downgrade or access task credentials. Registry errors remain explicit.

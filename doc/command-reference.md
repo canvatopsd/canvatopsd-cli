@@ -300,6 +300,30 @@ Network: required. Server action: read.
 canvatopsd doctor [OPTIONS]
 ```
 
+## canvatopsd update
+
+Check whether a newer stable CLI release is available
+
+Network: required. Server action: registry-read.
+
+```text
+canvatopsd update <COMMAND> [OPTIONS]
+```
+
+## canvatopsd update check
+
+Read the npm stable release without installing or changing settings
+
+Network: required. Server action: registry-read.
+
+```text
+canvatopsd update check [OPTIONS]
+```
+
+| Option                  | Required | Default                    | Description / allowed values                                    |
+| ----------------------- | -------- | -------------------------- | --------------------------------------------------------------- |
+| `--registry <REGISTRY>` | no       | https://registry.npmjs.org | Registry origin for a managed npm installation Advanced option. |
+
 ## canvatopsd resolve
 
 Parse a public Canva link or private task link locally; no network

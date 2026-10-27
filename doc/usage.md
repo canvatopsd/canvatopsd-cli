@@ -2,6 +2,10 @@
 
 Use stable task commands for conversion, previews, payment and downloads. The CLI uses the hosted service by default. It requires Node.js 22.16+ and shell access; no account or API key is needed. Business results are JSON; do not add `--json`.
 
+## Check for updates
+
+Run `canvatopsd update check` before starting a new Agent task. It reports currentVersion, latestVersion, updateAvailable and a version-specific installation command. This read-only npm check uses no task credentials or local business state. A local release ahead of npm reports `ahead`; it is not downgraded. Registry failures are explicit and do not prove that the installed CLI is current. Checking does not install an update.
+
 ## Normal workflow
 
 ```sh

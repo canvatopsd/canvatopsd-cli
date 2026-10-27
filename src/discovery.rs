@@ -37,6 +37,7 @@ fn effects(path: &[&str]) -> Value {
         ("", _) | ("help" | "discover" | "resolve", _) => (false, false, "none"),
         ("skill", "install") | ("init", _) | ("auth", "clear" | "export") => (false, true, "none"),
         ("skill", _) | ("auth", "status") => (false, false, "none"),
+        ("update", _) => (true, false, "registry-read"),
         ("auth", "import") => (true, true, "access-exchange"),
         ("convert" | "create" | "select", _) => (true, true, "conversion-submit"),
         ("pages" | "wait", _) => (true, true, "page-discovery-may-start-conversion"),

@@ -11,6 +11,7 @@ Requires Node.js 22.16 or later. No Rust compiler, Photoshop installation, Canva
 ```sh
 npm install -g @canvatopsd/cli
 canvatopsd --version
+canvatopsd update check
 canvatopsd --help
 ```
 

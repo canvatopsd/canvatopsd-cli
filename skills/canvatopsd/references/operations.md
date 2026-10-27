@@ -8,6 +8,8 @@ Website downloads are released separately. Check the website's [release metadata
 
 Use `claude-code`, `cursor`, `copilot`, `agents` or `--dir PATH` for another Agent. `skill status codex` compares the installed Skill with the CLI bundle. Review existing local edits before `skill install codex --replace`, which replaces the whole directory. Start a new Agent session after updating.
 
+Before starting a task, run `canvatopsd update check`. It checks the npm stable release without touching task credentials or installing software. Use the returned version-specific installation command when updating. After installation, verify the version and compare the bundled Skill; review local edits before replacement.
+
 ## Preview and downloads
 
 `preview TASK` returns a Web preview link; `preview TASK --page N` opens a selected page. Share the returned `previewUrl` unchanged. It provides private task access for seven days. Generate a fresh link with the same command when needed. The Web interface owns layer rendering and interaction.

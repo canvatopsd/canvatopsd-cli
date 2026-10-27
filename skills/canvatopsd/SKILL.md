@@ -11,6 +11,8 @@ metadata:
 
 Use `canvatopsd` with Node.js 22.16+. No account, API key or email is required. Business commands return JSON: success is `{"ok":true,"data":...}`; failure is `{"ok":false,"error":{"code":"...","message":"..."}}` with exit code 1. Help/version are text. Do not add `--json`.
 
+At the start of an Agent task, run `canvatopsd update check` once before hosted commands. Report whether a newer stable CLI is available. The check returns current/latest versions and an installation command when needed; it does not install anything. A local version ahead of npm is not a downgrade request. If the check fails, report that uncertainty separately; do not claim the CLI is current.
+
 Run `canvatopsd --help` or `canvatopsd discover COMMAND` for exact arguments. Discovery works offline. Run `doctor` to check the selected service before submitting work; report failures without creating a probe conversion. If the CLI is missing, read [references/operations.md](references/operations.md).
 
 ## Convert, preview and deliver
