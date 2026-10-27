@@ -1,6 +1,6 @@
 # CanvaToPSD CLI command reference
 
-Generated from Rust CLI 3.2.0 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
+Generated from Rust CLI 3.2.1 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
 
 Use this page to inspect every command without installing or executing the CLI. For capabilities, installation availability and pricing boundaries, read [product facts](product-facts.md). For task recovery and credential handling, read [Agent guidance](agent-discovery.md).
 
@@ -30,15 +30,17 @@ canvatopsd convert <url> [OPTIONS]
 | -------- | -------- | -------------------------------------------------------------- |
 | `url`    | yes      | Canva Share → Public view link, or copied canva.link share URL |
 
-| Option                | Required | Default | Description / allowed values                                                                                                                                                                                                 |
-| --------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--email <EMAIL>`     | no       | —       | Optional notification email                                                                                                                                                                                                  |
-| `--locale <LOCALE>`   | no       | —       | Task page and notification language; omission uses the API default Allowed: id, de, en, es, fr, it, pt-br, ru, ko, ja, zh, zh-tw, pl, hu, th, da, el, uk, ms, vi, sv, tr, cs, ro, lv, fi, bg, sr, sl, lt, et, nl, no, hr, sk |
-| `--key <KEY>`         | no       | —       | Reuse this UUID after an uncertain response                                                                                                                                                                                  |
-| `--no-layer-naming`   | no       | false   | Use local layer names without model naming                                                                                                                                                                                   |
-| `--dry-run`           | no       | false   | Validate locally without submitting or saving credentials                                                                                                                                                                    |
-| `--pages <numbers>`   | no       | —       | Design page numbers, e.g. 1,3; required for multi-page designs                                                                                                                                                               |
-| `--seconds <SECONDS>` | no       | 300     | Maximum wait after submission; timeout does not cancel conversion Integer; minimum 1.                                                                                                                                        |
+| Option                            | Required | Default | Description / allowed values                                                                                                                                                                                                 |
+| --------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--email <EMAIL>`                 | no       | —       | Optional notification email                                                                                                                                                                                                  |
+| `--locale <LOCALE>`               | no       | —       | Task page and notification language; omission uses the API default Allowed: id, de, en, es, fr, it, pt-br, ru, ko, ja, zh, zh-tw, pl, hu, th, da, el, uk, ms, vi, sv, tr, cs, ro, lv, fi, bg, sr, sl, lt, et, nl, no, hr, sk |
+| `--agent <AGENT>`                 | no       | —       | AI Agent submitting this task, e.g. codex, claude-code or cursor                                                                                                                                                             |
+| `--agent-version <AGENT_VERSION>` | no       | —       | Actual Agent application version, when known                                                                                                                                                                                 |
+| `--key <KEY>`                     | no       | —       | Reuse this UUID after an uncertain response                                                                                                                                                                                  |
+| `--no-layer-naming`               | no       | false   | Use local layer names without model naming                                                                                                                                                                                   |
+| `--dry-run`                       | no       | false   | Validate locally without submitting or saving credentials                                                                                                                                                                    |
+| `--pages <numbers>`               | no       | —       | Design page numbers, e.g. 1,3; required for multi-page designs                                                                                                                                                               |
+| `--seconds <SECONDS>`             | no       | 300     | Maximum wait after submission; timeout does not cancel conversion Integer; minimum 1.                                                                                                                                        |
 
 ## canvatopsd create
 
@@ -56,13 +58,15 @@ canvatopsd create <url> [OPTIONS]
 | -------- | -------- | -------------------------------------------------------------- |
 | `url`    | yes      | Canva Share → Public view link, or copied canva.link share URL |
 
-| Option              | Required | Default | Description / allowed values                                                                                                                                                                                                 |
-| ------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--email <EMAIL>`   | no       | —       | Optional notification email                                                                                                                                                                                                  |
-| `--locale <LOCALE>` | no       | —       | Task page and notification language; omission uses the API default Allowed: id, de, en, es, fr, it, pt-br, ru, ko, ja, zh, zh-tw, pl, hu, th, da, el, uk, ms, vi, sv, tr, cs, ro, lv, fi, bg, sr, sl, lt, et, nl, no, hr, sk |
-| `--key <KEY>`       | no       | —       | Reuse this UUID after an uncertain response                                                                                                                                                                                  |
-| `--no-layer-naming` | no       | false   | Use local layer names without model naming                                                                                                                                                                                   |
-| `--dry-run`         | no       | false   | Validate locally without submitting or saving credentials                                                                                                                                                                    |
+| Option                            | Required | Default | Description / allowed values                                                                                                                                                                                                 |
+| --------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--email <EMAIL>`                 | no       | —       | Optional notification email                                                                                                                                                                                                  |
+| `--locale <LOCALE>`               | no       | —       | Task page and notification language; omission uses the API default Allowed: id, de, en, es, fr, it, pt-br, ru, ko, ja, zh, zh-tw, pl, hu, th, da, el, uk, ms, vi, sv, tr, cs, ro, lv, fi, bg, sr, sl, lt, et, nl, no, hr, sk |
+| `--agent <AGENT>`                 | no       | —       | AI Agent submitting this task, e.g. codex, claude-code or cursor                                                                                                                                                             |
+| `--agent-version <AGENT_VERSION>` | no       | —       | Actual Agent application version, when known                                                                                                                                                                                 |
+| `--key <KEY>`                     | no       | —       | Reuse this UUID after an uncertain response                                                                                                                                                                                  |
+| `--no-layer-naming`               | no       | false   | Use local layer names without model naming                                                                                                                                                                                   |
+| `--dry-run`                       | no       | false   | Validate locally without submitting or saving credentials                                                                                                                                                                    |
 
 ## canvatopsd status
 

@@ -185,6 +185,12 @@ pub struct Submission {
     /// Task page and notification language; omission uses the API default
     #[arg(long, value_parser = ui_locales())]
     pub locale: Option<String>,
+    /// AI Agent submitting this task, e.g. codex, claude-code or cursor
+    #[arg(long)]
+    pub agent: Option<String>,
+    /// Actual Agent application version, when known
+    #[arg(long, requires = "agent")]
+    pub agent_version: Option<String>,
     /// Reuse this UUID after an uncertain response
     #[arg(long)]
     pub key: Option<String>,

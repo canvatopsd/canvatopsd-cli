@@ -14,6 +14,13 @@ pub fn submission(input: &Submission) -> Result<Value> {
         .clone()
         .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
     let mut body = json!({"submitKey":validation::uuid(&key)?,"canvaUrl":validation::canva_link(&input.url)?["url"],"layerNaming":!input.no_layer_naming});
+    body["client"] = json!({"channel":"cli","version":env!("CARGO_PKG_VERSION")});
+    if let Some(agent) = &input.agent {
+        body["client"]["agent"] = json!(client_label(agent, 80)?);
+    }
+    if let Some(version) = &input.agent_version {
+        body["client"]["agentVersion"] = json!(client_label(version, 64)?);
+    }
     if let Some(email) = &input.email {
         if !email_address::EmailAddress::is_valid(email) {
             return Err(invalid("Invalid notification email"));
@@ -24,6 +31,15 @@ pub fn submission(input: &Submission) -> Result<Value> {
         body["locale"] = json!(locale);
     }
     Ok(body)
+}
+fn client_label(value: &str, limit: usize) -> Result<&str> {
+    let value = value.trim();
+    if value.is_empty() || value.chars().count() > limit {
+        return Err(invalid(format!(
+            "Client label must contain 1 to {limit} characters"
+        )));
+    }
+    Ok(value)
 }
 pub fn selection(task: &str, pages: &str, key: Option<&str>) -> Result<Value> {
     Ok(

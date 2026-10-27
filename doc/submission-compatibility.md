@@ -9,3 +9,5 @@ The provider owns `api/contracts/ui-locale.schema.json`. The independent CLI kee
 An uncertain submission must reuse its original key, saved credential and identical URL, email, locale, layer-naming settings and page selection. Do not change locale while retrying an existing submission.
 
 Native platform acceptance covers offline command discovery, submission dry-run and credential privacy. Hosted conversion and payment acceptance are separate checks; do not create another conversion merely to validate installation.
+
+Client attribution is optional for older callers. CLI 3.2.1 reports its channel and version, with explicit Agent name/version when supplied. The API records the first submission and excludes attribution from the content hash, so upgrading the CLI does not invalidate an uncertain submission retry. Child pages inherit their parent attribution. Older APIs can reject the field; report incompatibility explicitly without dropping attribution and resubmitting.

@@ -22,3 +22,7 @@ Source validation covers rustfmt, Clippy with warnings denied, JavaScript syntax
 An isolated D1 and the final API Worker exercised link issuance and browser access, parent authorization, page validation, tampering, expiry, purpose mismatch, task mismatch and revoked access. No preview operation made a payment or outbound provider call. The final Web browser entry established access before loading the selected page, cleared its fragment, survived refresh and stored no business fields in browser storage.
 
 Temporary CLI integration checks cover stable result fields, PSD/font formats, image saving, page selection, required-input messages, payment reads, download integrity and overwrite refusal. Synthetic file-transfer checks do not establish Photoshop compatibility. No new conversion jobs, real payments, emails, public npm publication or prod deployment were part of this audit. Local native acceptance is macOS ARM64; other platforms require their own receipts.
+
+## Submission attribution in 3.2.1
+
+CLI submissions report their own version automatically. Agents pass `--agent NAME` and, when known, `--agent-version VERSION`. Attribution is explicit, retained from the first submission and inherited by child pages. It is excluded from the API content hash so a CLI update does not invalidate uncertain-submission recovery. Missing historical attribution stays unknown. The Skill does not guess Agent versions or send a model version as an application version.

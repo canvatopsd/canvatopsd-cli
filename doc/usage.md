@@ -45,6 +45,8 @@ Downloads default to PSD. Use `--format fonts` for a ZIP archive or `--format fo
 
 ## Optional settings and task access
 
+When submitting from an AI Agent, pass `--agent NAME` using the actual Agent name (for example `codex`, `claude-code`, `cursor` or `copilot`). Add `--agent-version VERSION` only when the actual application version is known; do not substitute a model name or guess a version. Plain terminal use omits these options. The CLI reports its own version automatically. This attribution is recorded on first submission and inherited by selected pages.
+
 `--email EMAIL` enables notifications. `--locale CODE` sets task-page and notification language, independently of PSD content and layer naming; omission uses English. `--no-layer-naming` skips model naming while keeping readable local names. Additional pages inherit parent settings. Inspect `discover convert` for supported values. Older services may reject explicit locale; report the error without changing the input or retrying a mutation.
 
 The CLI saves task access automatically. Do not print its local configuration or credentials. Back up with `auth export TASK FILE`; restore with `auth import FILE`. Export the parent task when it authorizes selected pages. A complete private task-link file can also be imported. Imports require the same service. See [task recovery](../skills/canvatopsd/references/operations.md).
