@@ -53,7 +53,10 @@ impl Client {
                 request.bearer_auth(self.config.operator_token.as_ref().ok_or_else(|| {
                     invalid("Set CANVATOPSD_OPERATOR_TOKEN for operator commands")
                 })?);
-        } else if path != "/task/create" && path != "/task/access/exchange" {
+        } else if path != "/task/create"
+            && path != "/task/access/exchange"
+            && path != "/task/preview/link/open"
+        {
             if let Some(cookie) = self.task_cookie(body.get("taskId").and_then(Value::as_str)) {
                 request = request.header(header::COOKIE, cookie);
             }

@@ -8,6 +8,8 @@ CanvaToPSD preserves supported editable text and separates images and artwork in
 
 Optional `--locale CODE` on `convert` or `create` sets the task page and notification language on APIs supporting that field. Omit it to use the API default, English. It does not change PSD content or layer naming; see [the usage guide](usage.md).
 
+`preview TASK` returns a Web `previewUrl`; share it unchanged. Use `--out FILE` only to save a whole-page image. Web manages interactive layer previews.
+
 ## Install
 
 Requires **Node.js 22.16 or later**. Supported platforms: macOS Apple Silicon (ARM64), Linux ARM64/x64 and Windows ARM64/x64. macOS Intel is unsupported. No Photoshop installation, Canva account login, API key or CanvaToPSD account is required for the ordinary conversion workflow. The CLI uses the hosted CanvaToPSD service and needs an internet connection for conversion and download.
@@ -37,7 +39,7 @@ canvatopsd convert 'CANVA_PUBLIC_VIEW_URL'
 Use the returned `taskId` as `TASK` in all following commands:
 
 ```sh
-canvatopsd preview TASK --out ./preview.webp
+canvatopsd preview TASK
 canvatopsd checkout TASK
 # Open the returned checkoutUrl and complete payment.
 canvatopsd download TASK --out ./design.psd
@@ -47,7 +49,7 @@ For a multi-page design, choose its page numbers explicitly:
 
 ```sh
 canvatopsd convert 'CANVA_PUBLIC_VIEW_URL' --pages 1,3
-canvatopsd preview TASK --page 3 --out ./page3.webp
+canvatopsd preview TASK --page 3
 canvatopsd checkout TASK --page 3
 canvatopsd download TASK --page 3 --out ./page3.psd
 ```

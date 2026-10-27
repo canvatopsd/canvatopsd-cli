@@ -58,49 +58,34 @@ pub fn save(mut response: Response, output: &str, receipt: Option<&Value>) -> Re
     }
     Ok(result)
 }
-fn select_page(pages: &[Value], artifact: Option<&str>, number: Option<u32>) -> Result<String> {
-    if let Some(id) = artifact {
-        return pages
-            .iter()
-            .find(|v| v["pageId"] == id)
-            .map(|_| id.to_owned())
-            .ok_or_else(|| invalid("Page ID does not belong to this task"));
-    }
-    if let Some(number) = number {
-        return pages
-            .iter()
-            .find(|v| v["index"] == number)
-            .map(|v| field(v, "pageId").map(str::to_owned))
-            .transpose()?
-            .ok_or_else(|| invalid("Requested page is not in the available files"));
-    }
-    if pages.len() != 1 {
-        return Err(invalid("Expected one file page; specify --artifact-page"));
-    }
-    Ok(field(&pages[0], "pageId")?.into())
+fn select_page(pages: &[Value], number: u32) -> Result<&Value> {
+    pages
+        .iter()
+        .find(|page| page["index"] == number)
+        .ok_or_else(|| invalid("Requested page is not in the available files"))
 }
 pub fn preview(
     client: &mut Client,
     task: &str,
     page: Option<u32>,
-    artifact: Option<&str>,
-    file: &str,
     output: Option<&str>,
 ) -> Result<Value> {
-    if output.is_none() && (artifact.is_some() || file != "preview.webp") {
-        return Err(invalid("Use --out to save the selected preview"));
-    }
-    if let Some(output) = output {
-        ensure_new_file(output)?;
-    }
+    let Some(output) = output else {
+        let mut input = crate::validation::task_input(task)?;
+        if let Some(page) = page {
+            input["page"] = json!(page);
+        }
+        return client.json("/task/preview/link/create", &input);
+    };
+    ensure_new_file(output)?;
     let quote = tasks::quote(client, task, page, "preview")?;
     let mut input = quote.input;
-    input["name"] = json!(file);
+    input["name"] = json!("preview.webp");
     let listing = client.json("/task/preview/list", &input)?;
-    let Some(output) = output else {
-        return tasks::public_result(listing, task, quote.page);
-    };
-    input["pageId"] = json!(select_page(array(&listing, "pages")?, artifact, page)?);
+    input["pageId"] = json!(field(
+        select_page(array(&listing, "pages")?, quote.page)?,
+        "pageId"
+    )?);
     let saved = save(
         client.post("/task/preview/read", &input, false, None)?,
         output,
@@ -112,24 +97,31 @@ pub fn download(
     client: &mut Client,
     task: &str,
     page: Option<u32>,
-    artifact: Option<&str>,
-    file: &str,
+    format: &str,
     output: &str,
 ) -> Result<Value> {
     ensure_new_file(output)?;
+    let file = match format {
+        "psd" => "page-0001.psd",
+        "fonts" => "fonts.zip",
+        "font-list" => "fonts.txt",
+        _ => return Err(invalid("Choose psd, fonts or font-list")),
+    };
     let quote = tasks::quote(client, task, page, "download")?;
     let mut input = quote.input;
     client.json("/task/checkout/read", &input)?;
     let listing = client.json("/task/delivery/read", &input)?;
-    input["pageId"] = json!(select_page(array(&listing, "pages")?, artifact, page)?);
+    input["pageId"] = json!(field(
+        select_page(array(&listing, "pages")?, quote.page)?,
+        "pageId"
+    )?);
     input["name"] = json!(file);
     let receipt = client.json("/task/delivery/download-url/create", &input)?;
     let response = client.download(field(&receipt, "url")?)?;
     let mut result = save(response, output, Some(&receipt))?;
     result["taskId"] = json!(task);
     result["page"] = json!(quote.page);
-    result["pageId"] = input["pageId"].clone();
-    result["name"] = json!(file);
+    result["format"] = json!(format);
     Ok(result)
 }
 pub fn ensure_new_file(output: &str) -> Result<()> {
@@ -143,5 +135,18 @@ pub fn ensure_new_file(output: &str) -> Result<()> {
 pub fn files(client: &mut Client, task: &str, page: Option<u32>) -> Result<Value> {
     let quote = tasks::quote(client, task, page, "files")?;
     let listing = client.json("/task/delivery/read", &quote.input)?;
-    tasks::public_result(listing, task, quote.page)
+    let selected = select_page(array(&listing, "pages")?, quote.page)?;
+    let files = array(selected, "files")?
+        .iter()
+        .filter_map(|file| {
+            let format = match file["name"].as_str()? {
+                "page-0001.psd" => "psd",
+                "fonts.zip" => "fonts",
+                "fonts.txt" => "font-list",
+                _ => return None,
+            };
+            Some(json!({"format":format,"bytes":file["bytes"]}))
+        })
+        .collect::<Vec<_>>();
+    Ok(json!({"taskId":task,"page":quote.page,"files":files}))
 }

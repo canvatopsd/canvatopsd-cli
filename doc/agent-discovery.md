@@ -28,28 +28,28 @@ canvatopsd discover auth export
 canvatopsd skill show
 ```
 
-`discover [command]` is the authoritative, offline command tree, generated from Clap definitions in the running binary. It includes descriptions, required arguments, option flags, defaults, allowed values, parameter `schema` types/ranges, `advanced` visibility and command `effects`. `effects.mayCapturePayment` is true for payment confirmation and null for raw requests whose action is determined at runtime. `effects.dryRun` describes the distinct dry-run behavior. The additive `data.product` object supplies the SPDX license identifier, capabilities, input/output formats, service requirements and package-relative documentation paths; `data.command` remains the actual command tree. Read [the generated Markdown reference](command-reference.md) when execution is unavailable. Nested paths accept separate words or a quoted string, e.g. `discover skill install`. No credential file or service connection is required for discovery.
+`discover [command]` is the authoritative, offline command tree, generated from Clap definitions in the running binary. By default it lists product commands; `discover --advanced` also includes maintenance operations and connection settings. It includes descriptions, required arguments, option flags, defaults, allowed values, parameter `schema` types/ranges, `advanced` visibility and command `effects`. `effects.mayCapturePayment` is true for payment confirmation and null for raw requests whose action is determined at runtime. `effects.dryRun` describes the distinct dry-run behavior. The additive `data.product` object supplies the SPDX license identifier, capabilities, input/output formats, service requirements and package-relative documentation paths; `data.command` remains the actual command tree. Read [the generated Markdown reference](command-reference.md) when execution is unavailable. Nested paths accept separate words or a quoted string, e.g. `discover skill install`. No credential file or service connection is required for discovery.
 
 Successful business commands emit `{"ok":true,"data":...}` on stdout and exit 0. Errors emit `{"ok":false,"error":{"code":"...","message":"..."}}` and exit 1. API errors include HTTP `status`. Submission failures may include `submitKey` and `taskId`. Help/version are text; diagnostics use stderr. Do not add `--json`.
 
 ## Intent to command mapping
 
-| User intent                       | Command                                     | Effect                                                 |
-| --------------------------------- | ------------------------------------------- | ------------------------------------------------------ |
-| Check the selected service        | `doctor`                                    | Read-only API protocol check                           |
-| Inspect or normalize a Canva link | `resolve URL`                               | Offline parsing                                        |
-| Validate a future conversion      | `convert URL --pages 1,3 --dry-run`         | Offline; no writes                                     |
-| Convert Canva to PSD previews     | `convert URL [--pages 1,3]`                 | Submits and waits                                      |
-| Continue an existing task         | `status TASK` / `wait TASK`                 | Live reads; wait may discover/select source pages      |
-| Choose design pages               | `select TASK 1,3`                           | Submits page selection                                 |
-| Inspect preview                   | `preview TASK --out FILE`                   | Writes a new file                                      |
-| Get payment link                  | `checkout TASK`                             | Creates/reuses checkout; present checkoutUrl unchanged |
-| Download Photoshop PSD            | `download TASK --out FILE`                  | Synchronizes payment and verifies the transfer         |
-| Download fonts                    | `download TASK --file fonts.zip --out FILE` | Same authorization and payment requirements            |
-| Back up task access               | `auth export TASK FILE`                     | Writes a secret credential file                        |
-| Install Agent instructions        | `skill install codex`                       | Writes Skill files in the user's Agent directory       |
+| User intent                       | Command                                   | Effect                                                 |
+| --------------------------------- | ----------------------------------------- | ------------------------------------------------------ |
+| Check the selected service        | `doctor`                                  | Read-only API protocol check                           |
+| Inspect or normalize a Canva link | `resolve URL`                             | Offline parsing                                        |
+| Validate a future conversion      | `convert URL --pages 1,3 --dry-run`       | Offline; no writes                                     |
+| Convert Canva to PSD previews     | `convert URL [--pages 1,3]`               | Submits and waits                                      |
+| Continue an existing task         | `status TASK` / `wait TASK`               | Live reads; wait may discover/select source pages      |
+| Choose design pages               | `select TASK 1,3`                         | Submits page selection                                 |
+| Inspect preview                   | `preview TASK`                            | Returns a private Web preview link                     |
+| Get payment link                  | `checkout TASK`                           | Creates/reuses checkout; present checkoutUrl unchanged |
+| Download Photoshop PSD            | `download TASK --out FILE`                | Synchronizes payment and verifies the transfer         |
+| Download fonts                    | `download TASK --format fonts --out FILE` | Same authorization and payment requirements            |
+| Back up task access               | `auth export TASK FILE`                   | Writes a secret credential file                        |
+| Install Agent instructions        | `skill install codex`                     | Writes Skill files in the user's Agent directory       |
 
-For multi-page tasks, add `--page N` to preview, checkout and download. Preserve the original public task ID throughout. Only explicit artifact selection uses `--artifact-page ID`.
+For multi-page tasks, add `--page N` to preview, checkout and download. Preserve the original public task ID throughout. Web owns interactive preview rendering.
 
 ## Recommended execution order
 
@@ -91,7 +91,7 @@ These references describe capabilities and limits. They do not guarantee an arbi
 | HTTP 401/403                       | Import matching task credentials for the selected endpoint; task keys alone cannot restore access.  |
 | `native_binary_missing`            | Install an archive containing this execution environment's OS/CPU; do not retry the hosted service. |
 
-A download size/hash mismatch leaves no final output file. An existing output file is preserved; choose a new path. For raw POST commands, inspect provider contracts before sending requests because side effects depend on the action.
+A download size/hash mismatch leaves no final output file. An existing output file is preserved; choose a new path. Maintenance commands require an explicit maintenance task.
 
 ## Page selection and stable task identity
 

@@ -202,7 +202,9 @@ export async function checkRelease(
   )
     throw new Error("Conversion workflow missing");
   const rootDiscovery = JSON.parse(run(["discover"]));
-  const expectedReference = await commandReference(rootDiscovery.data);
+  const expectedReference = await commandReference(
+    JSON.parse(run(["discover", "--advanced"])).data,
+  );
   if (
     expectedReference !==
     (await readFile(join(directory, "doc/command-reference.md"), "utf8"))

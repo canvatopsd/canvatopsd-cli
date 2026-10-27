@@ -1,31 +1,30 @@
-# Detailed operations
+# Installation and task recovery
 
-## Installation and release identity
+## Install and identify the CLI
 
-Install the published Rust CLI with `npm install -g @canvatopsd/cli`, then run `canvatopsd --version`, `canvatopsd skill install codex` and `canvatopsd doctor`. Node.js 22.16+ is needed for the npm launcher; end users do not need Rust. Supported platforms are macOS ARM64, Linux ARM64/x64 and Windows ARM64/x64.
+Install with `npm install -g @canvatopsd/cli`, then run `canvatopsd --version`, `canvatopsd skill install codex` and `canvatopsd doctor`. Node.js 22.16+ is required. Supported platforms are macOS ARM64, Linux ARM64/x64 and Windows ARM64/x64.
 
-Website downloads follow an independent release. Check the website's [release metadata](https://canvatopsd.com/agent/release.json) before treating that download as the installed Rust package.
+Website downloads are released separately. Check the website's [release metadata](https://canvatopsd.com/agent/release.json) when identifying that distribution. A locally installed release can be newer than the public registry or website.
 
-Use `claude-code`, `cursor`, `copilot`, `agents` or `--dir PATH` for another Agent. The execution environment's PATH, OS/CPU and Node runtime may differ from the user's terminal. The installed package's `doc/index.md` links product facts and the generated command reference; `canvatopsd discover` returns their package-relative paths.
+Use `claude-code`, `cursor`, `copilot`, `agents` or `--dir PATH` for another Agent. `skill status codex` compares the installed Skill with the CLI bundle. Review existing local edits before `skill install codex --replace`, which replaces the whole directory. Start a new Agent session after updating.
 
-## Preview and font files
+## Preview and downloads
 
-- `preview TASK` lists previews; add `--out FILE` to save one. Use `--file preview-layers.json` or `preview-layers.webp` for layer previews. `files TASK` lists paid files; `download` defaults to PSD, or use `--file fonts.zip` / `fonts.txt`. Downloads verify size and SHA-256 and refuse overwrites.
+`preview TASK` returns a Web preview link; `preview TASK --page N` opens a selected page. Share the returned `previewUrl` unchanged. It provides private task access for seven days. Generate a fresh link with the same command when needed. The Web interface owns layer rendering and interaction.
 
-## Credentials and recovery
+`preview TASK --out FILE` saves a whole-page image. `download TASK --out FILE` saves the PSD. For fonts, use `download TASK --format fonts --out FILE`; use `--format font-list` for a text list. Add `--page N` when multiple pages were converted. Paid downloads verify the transfer and refuse to overwrite existing files.
 
-No account, API key, or email is required. Creation generates and saves a task-specific random token **before** sending the request. The server stores only its hash; the CLI saves its task Cookie. Retries with `--key` reuse the saved token, so a lost create response does not lose access. `auth status` lists saved submission keys without exposing tokens.
+## Restore task access
 
-Email is optional via `create URL --email EMAIL` and only enables notifications. Optional `--locale CODE` on convert/create sets task page and notification language; omission leaves the API default. Additional pages inherit the parent language. Inspect `discover convert` for supported codes. Keep locale unchanged when reusing a submission key. Explicit locale requires a language-aware API; doctor only checks the base task protocol. Without email, use `status` / `wait` for progress and requested input. Ready/payment does not revoke the original credential. Parent credentials authorize direct children. Only the target task or its parent credential is sent. `select`, `pages`, and parent `status` record authorization relations; for children created before 2.2, run `status PARENT_TASK` once to populate them.
+The CLI saves task access automatically. On a new machine, import a backup or the user's private task-link file:
 
-Back up one task with `canvatopsd auth export TASK /absolute/task-access.json`; restore on a new client with `canvatopsd auth import /absolute/task-access.json`. Export the parent when a child uses parent authorization. Exports are secret 0600 files; do not print them. Imports require the same endpoint. Existing private email-link files, including `zh-tw` and `pt-br` URL prefixes, can also be imported. `auth clear` removes cookies, saved retry tokens, and parent-child authorization relations for the endpoint. With no email, losing local credentials and all backups prevents self-service recovery.
+```sh
+canvatopsd auth export TASK /absolute/task-access.json
+canvatopsd auth import /absolute/task-access.json
+```
 
-The API must support optional email and `taskToken`; an old API rejects the new request. Do not work around this with placeholder email addresses or account-level keys.
+Exports are secret files; do not print or attach them. Export the original parent task when it provides access to selected pages. Imports require the same service. `auth status` reports saved access without printing secrets. Without email or a backup, lost local task access cannot be recovered through self-service. A task ID or submission key alone does not restore access.
 
-Configuration is `~/.config/canvatopsd/config.json`; use `CANVATOPSD_CONFIG` to isolate agents when desired. Configuration updates use a file lock and merge into freshly read data. `ELOCKED` means another command is updating it: wait for that command, then retry; retain `--key` when a submission outcome is uncertain. Only endpoint settings and credentials (including retry tokens) are persisted. `CANVATOPSD_BASE_URL` overrides the saved endpoint. Operator commands require a direct API origin and `CANVATOPSD_OPERATOR_TOKEN`; direct API customer commands also require `CANVATOPSD_PROXY_TOKEN`. Web calls need neither secret. Operator auth does not replace task credentials.
+For HTTP 401/403, restore the matching task access. `ELOCKED` means another command is updating local settings: let it finish before retrying. For an uncertain submission, retain the original submission key and identical settings. `wait_timeout` means continue with `wait TASK`; it does not cancel the conversion.
 
-Stdout success is `{ "ok": true, "data": ... }`; failure is `{ "ok": false, "error": { "code": "...", "message": "..." } }` with exit 1. Help/version are text. Report explicit errors rather than retrying mutations. `wait TASK --seconds 300` bounds the entire wait including HTTP requests and stops when input/selection is required.
-
-For uncovered actions, first inspect `canvatopsd request --help` and the public usage guide at https://canvatopsd.com/agent/doc/usage.md. Use `canvatopsd request /command/path --body /absolute/request.json` (`--operator` only for operator commands). Raw calls are POST and may write. Do not auto-pay, resend mail, retry failed execution, or restart services without the user's request.
-
-Install this Skill with `canvatopsd skill install codex`, `claude-code`, `cursor`, `copilot`, or `agents`; custom parent directory: `skill install --dir PATH`. Keep generated output in a user-selected directory.
+Normal commands use the hosted service automatically. Do not change service settings, reconstruct URLs, invoke maintenance commands, retry failed execution or restart services merely to recover a conversion. Report explicit errors and use the supported recovery commands.

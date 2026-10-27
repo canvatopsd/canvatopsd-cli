@@ -1,19 +1,24 @@
-# CLI and Skill synchronization audit
+# CLI and Skill access audit
 
-CLI 3.1.8 was checked against the API command schemas and implementation on 2026-10-27.
+CLI 3.2.0 and its bundled Skill were reviewed on 2026-10-27 around a stable product interface: task identity, design page numbers, Web preview, checkout and verified downloads.
 
-## Changes
+## Product boundaries
 
-- Add optional `--locale CODE` to convert/create, using the provider-owned language schema snapshot. Omission still sends no locale field, preserving older strict API compatibility. Explicit locale requires a language-aware API; the base protocol doctor does not negotiate this capability.
-- Recognize child-task `inputRequired` values of 0/1 from the API database projection, as well as boolean values. Status now exposes required input and wait stops for attention.
-- Correct the Skill checkout flow: hosted links establish task access and show the task page with PayPal/Creem controls. Opening the link does not automatically redirect to a payment provider.
-- Remove the obsolete claim that the Rust CLI depends on the TypeScript contracts package. Clarify discovery output and identical-input requirements for uncertain submission recovery.
-- Synchronize Skill and product metadata versions during npm version changes. Final artifact validation rejects version differences in these documents.
+- `preview TASK` returns a server-issued private `previewUrl`, with optional `--page N`. The Web interface owns task entry, layer rendering and preview resource formats. `--out FILE` saves only a whole-page image. The CLI does not construct Web routes or use checkout to obtain preview access.
+- Preview links can be imported from a file with `auth import FILE`. Existing task IDs, credentials and submission keys remain usable.
+- Downloads use `--format psd|fonts|font-list`. Internal preview-file and artifact-page options are removed. File listing, page discovery, selection, checkout and payment results expose product fields instead of internal identifiers and raw manifests.
+- Status identifies the page requiring input and includes its message, so the caller can continue using the original task rather than searching for a child conversion.
+- Default discovery includes ordinary product commands. `discover --advanced` and explicit command discovery retain maintainer access. Raw requests are not a recovery step in the Skill.
+- The Skill and user documentation explain product actions and recovery. Credentials, browser cookies, API routes, layer JSON and atlas handling are not part of the normal Agent workflow.
+
+## Compatibility and release ordering
+
+This minor release changes preview results and removes internal artifact flags. Scripts using those details must move to Web preview links, design page numbers and download formats. The API preview-link commands and the Web entry handler must be released before public CLI distribution. Missing support fails explicitly; doctor checks only the base protocol. Local installation, public npm and website distribution remain separate releases.
 
 ## Validation
 
-Source checks include rustfmt, Clippy with warnings denied, JavaScript syntax checks and Markdown formatting. A temporary local API simulation exercised 35 language values and 39 requests across task creation, page discovery/selection, status, attention, parent authorization, previews, checkout, payment reads, file listing and delivery. Download size/hash checks and refusal to overwrite existing files were exercised; a failed integrity check left no final file. Offline submission validation created no credential file.
+Source validation covers rustfmt, Clippy with warnings denied, JavaScript syntax, Markdown formatting, API lint/type checks, Web type checks and Skill validation. Each deployment unit checks its final build before local deployment. CLI packaging additionally checks extracted archives, native identity, privacy, unresolved LFS pointers, version consistency and generated discovery documentation.
 
-The existing production read-only protocol endpoint passed doctor. No real conversion jobs, payment creation, fund capture or email sending were used for this audit. A protocol check does not establish production locale support or Runner readiness. Local simulation is not acceptance of the full hosted conversion workflow or Photoshop editability.
+An isolated D1 and the final API Worker exercised link issuance and browser access, parent authorization, page validation, tampering, expiry, purpose mismatch, task mismatch and revoked access. No preview operation made a payment or outbound provider call. The final Web browser entry established access before loading the selected page, cleared its fragment, survived refresh and stored no business fields in browser storage.
 
-The local release follows build, final artifact/archive checks, then npm installation. This audit targets macOS ARM64; other native platforms require their own acceptance receipts before public npm publication. Website distribution and API releases remain separate deployment units.
+Temporary CLI integration checks cover stable result fields, PSD/font formats, image saving, page selection, required-input messages, payment reads, download integrity and overwrite refusal. Synthetic file-transfer checks do not establish Photoshop compatibility. No new conversion jobs, real payments, emails, public npm publication or prod deployment were part of this audit. Local native acceptance is macOS ARM64; other platforms require their own receipts.

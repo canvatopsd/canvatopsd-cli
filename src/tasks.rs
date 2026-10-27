@@ -30,13 +30,36 @@ pub fn selection(task: &str, pages: &str, key: Option<&str>) -> Result<Value> {
         json!({"taskId":validation::uuid(task)?,"submitKey":validation::uuid(&key.map(str::to_owned).unwrap_or_else(|| uuid::Uuid::new_v4().to_string()))?,"pages":validation::pages(pages)?}),
     )
 }
+pub fn source_pages(client: &mut Client, task: &str, refresh: bool) -> Result<Value> {
+    let mut input = validation::task_input(task)?;
+    input["refresh"] = json!(refresh);
+    let source = client.json("/task/source-page/list", &input)?;
+    let pages = match field(&source, "status")? {
+        "ready" => array(&source, "pages")?.iter().map(|page| json!({"number":page["index"],"width":page["width"],"height":page["height"],"ready":page["ready"]})).collect(),
+        "pending" | "failed" => Vec::new(),
+        _ => return Err(invalid("Unknown page discovery status")),
+    };
+    Ok(json!({"taskId":task,"status":source["status"],"message":source["message"],"pages":pages}))
+}
 pub fn read_status(client: &mut Client, task: &str, deadline: Option<Instant>) -> Result<Value> {
-    client.json_with(
+    let mut status = client.json_with(
         "/task/status",
         &validation::task_input(task)?,
         false,
         deadline,
-    )
+    )?;
+    if let Some(pages) = status.get_mut("pageTasks").and_then(Value::as_array_mut) {
+        for page in pages.iter_mut().filter(|page| requires_input(page)) {
+            let child = client.json_with(
+                "/task/status",
+                &validation::task_input(field(page, "taskId")?)?,
+                false,
+                deadline,
+            )?;
+            page["message"] = child["message"].clone();
+        }
+    }
+    Ok(status)
 }
 pub fn conversion_pages(status: &Value) -> Result<Vec<Value>> {
     let mut pages = array(status, "pageTasks")?
@@ -49,7 +72,7 @@ pub fn conversion_pages(status: &Value) -> Result<Vec<Value>> {
             .get("sourcePage")
             .and_then(Value::as_u64)
             .unwrap_or(1);
-        pages.insert(0, json!({"taskId":field(status,"taskId")?,"pageStart":page,"pageEnd":page,"status":field(status,"status")?,"inputRequired":status["inputRequired"],"paymentState":status["quote"]["payment_state"]}));
+        pages.insert(0, json!({"taskId":field(status,"taskId")?,"pageStart":page,"pageEnd":page,"status":field(status,"status")?,"inputRequired":status["inputRequired"],"message":status["message"],"paymentState":status["quote"]["payment_state"]}));
     }
     Ok(pages)
 }
@@ -71,7 +94,7 @@ pub fn summary(status: &Value) -> Result<Value> {
         field(status, "status")?
     };
     Ok(
-        json!({"taskId":field(status,"taskId")?,"status":state,"inputRequired":requires_input(status) || pages.iter().any(requires_input),"message":if ready { json!("Selected pages are ready for preview") } else { status["message"].clone() },"pageSelectionRequired":status.get("selection").is_some_and(|v| !v.is_null() && v["confirmed"] != true),"pages":pages.iter().map(|v| json!({"number":v["pageStart"],"status":v["status"],"paymentState":v["paymentState"]})).collect::<Vec<_>>()}),
+        json!({"taskId":field(status,"taskId")?,"status":state,"inputRequired":requires_input(status) || pages.iter().any(requires_input),"message":if ready { json!("Selected pages are ready for preview") } else { status["message"].clone() },"pageSelectionRequired":status.get("selection").is_some_and(|v| !v.is_null() && v["confirmed"] != true),"pages":pages.iter().map(|v| json!({"number":v["pageStart"],"status":v["status"],"paymentState":v["paymentState"],"inputRequired":requires_input(v),"message":v["message"]})).collect::<Vec<_>>()}),
     )
 }
 pub struct TaskQuote {

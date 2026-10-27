@@ -1,6 +1,6 @@
 # CanvaToPSD CLI command reference
 
-Generated from Rust CLI 3.1.9 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
+Generated from Rust CLI 3.2.0 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
 
 Use this page to inspect every command without installing or executing the CLI. For capabilities, installation availability and pricing boundaries, read [product facts](product-facts.md). For task recovery and credential handling, read [Agent guidance](agent-discovery.md).
 
@@ -136,7 +136,7 @@ canvatopsd select <task> <pages> [OPTIONS]
 
 ## canvatopsd preview
 
-List previews, or save one with --out
+Get a Web preview link, or save a whole-page image with --out
 
 Network: required. Server action: read.
 
@@ -148,12 +148,10 @@ canvatopsd preview <task> [OPTIONS]
 | -------- | -------- | ------------------------------------------------------------------------ |
 | `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
 
-| Option                            | Required | Default      | Description / allowed values                                                                                      |
-| --------------------------------- | -------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>`                   | no       | —            | Design page number; required when multiple pages were converted Integer; minimum 1; maximum 4294967295.           |
-| `--out <OUT>`                     | no       | —            | Write to a new output file; existing files are never overwritten                                                  |
-| `--artifact-page <ARTIFACT_PAGE>` | no       | —            | Explicit internal artifact page ID; normally use --page instead Advanced option.                                  |
-| `--file <FILE>`                   | no       | preview.webp | Preview artifact to list or save Advanced option. Allowed: preview.webp, preview-layers.webp, preview-layers.json |
+| Option          | Required | Default | Description / allowed values                                                                                        |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
+| `--out <OUT>`   | no       | —       | Write to a new output file; existing files are never overwritten                                                    |
 
 ## canvatopsd download
 
@@ -169,12 +167,11 @@ canvatopsd download <task> --out <OUT> [OPTIONS]
 | -------- | -------- | ------------------------------------------------------------------------ |
 | `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
 
-| Option                            | Required | Default       | Description / allowed values                                                                            |
-| --------------------------------- | -------- | ------------- | ------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>`                   | no       | —             | Design page number; required when multiple pages were converted Integer; minimum 1; maximum 4294967295. |
-| `--out <OUT>`                     | yes      | —             | Write to a new output file; existing files are never overwritten                                        |
-| `--artifact-page <ARTIFACT_PAGE>` | no       | —             | Explicit internal artifact page ID; normally use --page instead Advanced option.                        |
-| `--file <FILE>`                   | no       | page-0001.psd | Paid PSD or font artifact to download Advanced option. Allowed: page-0001.psd, fonts.zip, fonts.txt     |
+| Option              | Required | Default | Description / allowed values                                                                                        |
+| ------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `--page <PAGE>`     | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
+| `--out <OUT>`       | yes      | —       | Write to a new output file; existing files are never overwritten                                                    |
+| `--format <FORMAT>` | no       | psd     | Download the PSD, font archive or font list Allowed: psd, fonts, font-list                                          |
 
 ## canvatopsd files
 
@@ -192,9 +189,9 @@ canvatopsd files <task> [OPTIONS]
 | -------- | -------- | ------------------------------------------------------------------------ |
 | `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
 
-| Option          | Required | Default | Description / allowed values                                                                            |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>` | no       | —       | Design page number; required when multiple pages were converted Integer; minimum 1; maximum 4294967295. |
+| Option          | Required | Default | Description / allowed values                                                                                        |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
 
 ## canvatopsd checkout
 
@@ -210,10 +207,10 @@ canvatopsd checkout <task> [OPTIONS]
 | -------- | -------- | ------------------------------------------------------------------------ |
 | `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
 
-| Option          | Required | Default | Description / allowed values                                                                            |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>` | no       | —       | Design page number; required when multiple pages were converted Integer; minimum 1; maximum 4294967295. |
-| `--dry-run`     | no       | false   | Inspect the command input without submitting this action                                                |
+| Option          | Required | Default | Description / allowed values                                                                                        |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
+| `--dry-run`     | no       | false   | Inspect the command input without submitting this action                                                            |
 
 ## canvatopsd payment
 
@@ -247,9 +244,9 @@ canvatopsd payment status <task> [OPTIONS]
 | -------- | -------- | ------------------------------------------------------------------------ |
 | `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
 
-| Option          | Required | Default | Description / allowed values                                                                            |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>` | no       | —       | Design page number; required when multiple pages were converted Integer; minimum 1; maximum 4294967295. |
+| Option          | Required | Default | Description / allowed values                                                                                        |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
 
 ## canvatopsd payment confirm
 
@@ -265,9 +262,9 @@ canvatopsd payment confirm <task> [OPTIONS]
 | -------- | -------- | ------------------------------------------------------------------------ |
 | `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
 
-| Option          | Required | Default | Description / allowed values                                                                            |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>` | no       | —       | Design page number; required when multiple pages were converted Integer; minimum 1; maximum 4294967295. |
+| Option          | Required | Default | Description / allowed values                                                                                        |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
 
 ## canvatopsd confirm
 
@@ -285,9 +282,9 @@ canvatopsd confirm <task> [OPTIONS]
 | -------- | -------- | ------------------------------------------------------------------------ |
 | `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
 
-| Option          | Required | Default | Description / allowed values                                                                            |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>` | no       | —       | Design page number; required when multiple pages were converted Integer; minimum 1; maximum 4294967295. |
+| Option          | Required | Default | Description / allowed values                                                                                        |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
 
 ## canvatopsd doctor
 
@@ -522,3 +519,7 @@ canvatopsd discover [command...] [OPTIONS]
 | Argument  | Required | Description                                                     |
 | --------- | -------- | --------------------------------------------------------------- |
 | `command` | no       | Command path, e.g. skill install; quoted paths remain supported |
+
+| Option       | Required | Default | Description / allowed values                        |
+| ------------ | -------- | ------- | --------------------------------------------------- |
+| `--advanced` | no       | false   | Include maintenance commands and connection details |

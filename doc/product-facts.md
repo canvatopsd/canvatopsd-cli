@@ -24,7 +24,7 @@ CanvaToPSD is an independent service. The CLI's use of Canva and Photoshop forma
 
 Accepted source URLs are Canva **Share → Public view link → Copy link** URLs and copied `https://canva.link/...` share links. Existing conversions are addressed by their task UUID. Private editor links, arbitrary image files, PDFs and existing PSDs are not conversion inputs to this CLI.
 
-The CLI can retrieve a layered PSD, WebP preview, JSON/WebP layer preview, font ZIP and font-list TXT when available for the task. Static single-page and selected multi-page designs are supported. Design page numbers start at 1. Multiple selected pages produce separate page results; preserve the original task ID and add `--page N` when retrieving a selected page.
+The CLI can retrieve a layered PSD, Web preview link, whole-page WebP image, font ZIP and font-list TXT when available for the task. Static single-page and selected multi-page designs are supported. Design page numbers start at 1. Multiple selected pages produce separate page results; preserve the original task ID and add `--page N` when retrieving a selected page.
 
 Vector paths remain rasterized. Font availability and effects may differ from Canva. Video, animation, interactive exports and offline Canva rendering are not supported. A verified download confirms size and SHA-256 transfer integrity, not pixel-identical rendering or Photoshop reopening.
 
@@ -47,7 +47,7 @@ Business commands emit `{"ok":true,"data":...}` on stdout, or `{"ok":false,"erro
 
 `canvatopsd discover` returns the actual command tree plus product capabilities, supported input/output descriptions, documentation paths and service requirements. `canvatopsd skill show` returns the bundled instructions. Both work offline without reading task credentials.
 
-The shortest workflow is `convert URL` → `preview TASK --out FILE` → `checkout TASK` → user payment → `download TASK --out FILE`. Share the hosted `checkoutUrl` unchanged. `payment confirm` can capture approved funds. A request to convert a design does not itself imply permission to pay.
+The shortest workflow is `convert URL` → `preview TASK` → `checkout TASK` → user payment → `download TASK --out FILE`. Share the hosted `checkoutUrl` unchanged. `payment confirm` can capture approved funds. A request to convert a design does not itself imply permission to pay.
 
 ## References for quotation and implementation
 

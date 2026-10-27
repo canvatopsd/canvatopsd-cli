@@ -16,7 +16,7 @@ fn ui_locales() -> clap::builder::PossibleValuesParser {
 }
 
 #[derive(Parser)]
-#[command(name = "canvatopsd", version = env!("CARGO_PKG_VERSION"), about = "Canva to PSD CLI for AI agents. Convert public Canva links to editable layered Photoshop files. Business results are JSON.", subcommand_help_heading = "Common commands", after_help = "Start: canvatopsd discover | canvatopsd skill show\nWorkflow: convert URL → preview TASK --out FILE → checkout TASK → user payment → download TASK --out FILE\nMulti-page: convert URL --pages 1,3; then use --page 3. No --json flag is needed.\nAdvanced: create, files, init, resolve, operator, request. Use COMMAND --help or discover for details.")]
+#[command(name = "canvatopsd", version = env!("CARGO_PKG_VERSION"), about = "Canva to PSD CLI for AI agents. Convert public Canva links to editable layered Photoshop files. Business results are JSON.", subcommand_help_heading = "Common commands", after_help = "Start: canvatopsd discover | canvatopsd skill show\nWorkflow: convert URL → preview TASK → checkout TASK → user payment → download TASK --out FILE\nMulti-page: convert URL --pages 1,3; then use --page 3. No --json flag is needed.\nUse COMMAND --help or discover for product commands; discover --advanced for maintenance.")]
 pub struct Cli {
     #[command(flatten)]
     pub options: Options,
@@ -85,19 +85,13 @@ pub enum Command {
         #[arg(long)]
         dry_run: bool,
     },
-    /// List previews, or save one with --out
+    /// Get a Web preview link, or save a whole-page image with --out
     Preview {
         #[command(flatten)]
         selection: Selection,
         /// Write to a new output file; existing files are never overwritten
         #[arg(long)]
         out: Option<String>,
-        /// Explicit internal artifact page ID; normally use --page instead
-        #[arg(long, hide = true)]
-        artifact_page: Option<String>,
-        /// Preview artifact to list or save
-        #[arg(long, hide = true, default_value = "preview.webp", value_parser = ["preview.webp", "preview-layers.webp", "preview-layers.json"])]
-        file: String,
     },
     /// Synchronize payment and download a PSD or fonts; verify size and SHA-256
     Download {
@@ -106,12 +100,9 @@ pub enum Command {
         /// Write to a new output file; existing files are never overwritten
         #[arg(long)]
         out: String,
-        /// Explicit internal artifact page ID; normally use --page instead
-        #[arg(long, hide = true)]
-        artifact_page: Option<String>,
-        /// Paid PSD or font artifact to download
-        #[arg(long, hide = true, default_value = "page-0001.psd", value_parser = ["page-0001.psd", "fonts.zip", "fonts.txt"])]
-        file: String,
+        /// Download the PSD, font archive or font list
+        #[arg(long, default_value = "psd", value_parser = ["psd", "fonts", "font-list"])]
+        format: String,
     },
     /// List paid PSD and font files
     #[command(hide = true)]
@@ -179,6 +170,9 @@ pub enum Command {
         /// Command path, e.g. skill install; quoted paths remain supported
         #[arg(num_args = 0..)]
         command: Vec<String>,
+        /// Include maintenance commands and connection details
+        #[arg(long)]
+        advanced: bool,
     },
 }
 #[derive(Args)]
@@ -205,7 +199,7 @@ pub struct Submission {
 pub struct Selection {
     /// Original task UUID returned by convert; reuse it for every selected page
     pub task: String,
-    /// Design page number; required when multiple pages were converted
+    /// Design page number; file and payment commands require it for multiple pages
     #[arg(long, value_parser = clap::value_parser!(u32).range(1..))]
     pub page: Option<u32>,
 }

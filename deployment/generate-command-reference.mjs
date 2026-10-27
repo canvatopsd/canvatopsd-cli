@@ -19,7 +19,10 @@ const executable = join(
   process.platform === "win32" ? "canvatopsd.exe" : "canvatopsd",
 );
 const result = JSON.parse(
-  execFileSync(executable, ["discover"], { cwd: unit, encoding: "utf8" }),
+  execFileSync(executable, ["discover", "--advanced"], {
+    cwd: unit,
+    encoding: "utf8",
+  }),
 );
 if (!result.ok)
   throw new Error("Cannot generate command reference from CLI discovery");

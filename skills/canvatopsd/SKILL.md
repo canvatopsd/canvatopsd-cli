@@ -3,44 +3,42 @@ name: canvatopsd
 description: Convert public Canva links to editable layered Photoshop PSDs, or retrieve previews and paid files for an existing CanvaToPSD task. Use for Canva to PSD, Canva to Photoshop and layered PSD export. Requires shell access; does not edit existing PSDs or convert arbitrary images/PDFs.
 metadata:
   author: CanvaToPSD
-  version: "3.1.9"
+  version: "3.2.0"
   homepage: https://canvatopsd.com/ai-agent
 ---
 
 # CanvaToPSD
 
-Use `canvatopsd` with Node.js 22.16+ (npm launcher; conversion commands run in Rust). Results are already JSON; do not add `--json`. Help/version are text. Success is `{ "ok": true, "data": ... }` (exit 0); failure is `{ "ok": false, "error": { "code": "...", "message": "..." } }` (exit 1). Diagnostics use stderr.
+Use `canvatopsd` with Node.js 22.16+. No account, API key or email is required. Business commands return JSON: success is `{"ok":true,"data":...}`; failure is `{"ok":false,"error":{"code":"...","message":"..."}}` with exit code 1. Help/version are text. Do not add `--json`.
 
-## Start
+Run `canvatopsd --help` or `canvatopsd discover COMMAND` for exact arguments. Discovery works offline. Run `doctor` to check the selected service before submitting work; report failures without creating a probe conversion. If the CLI is missing, read [references/operations.md](references/operations.md).
 
-- Run `canvatopsd --help` for the overview, `canvatopsd COMMAND --help` for arguments, or `canvatopsd discover skill install` for a machine-readable command definition. `discover` works offline without configuration or credentials.
-- Default service is **prod** `https://canvatopsd.com/api`. Use `--base-url http://127.0.0.1:8080/api` explicitly for local. Run `doctor` against the intended endpoint before submitting work: it verifies the read-only `/task/protocol/read` API and required task-token protocol. Report failures without submitting a probe job.
-- If the CLI is missing, read the installation section in [references/operations.md](references/operations.md). No account, API key or email is required for ordinary Web calls. `convert --email EMAIL` only enables notifications. On an API supporting task languages, add `--locale CODE` to set the task page and notification language (e.g. `zh`, `zh-tw`, `pt-br`); omit it to use the API default, English. This does not change PSD content or layer naming. Older strict APIs reject explicit locale; report that error without resubmitting with different settings. `doctor` does not verify locale support.
-
-## Convert and deliver
+## Convert, preview and deliver
 
 ```sh
 canvatopsd convert 'CANVA_PUBLIC_VIEW_URL'
-canvatopsd preview TASK --out ./preview.webp
+canvatopsd preview TASK
 canvatopsd checkout TASK
 # After the user pays:
 canvatopsd download TASK --out ./design.psd
 ```
 
-The bundled instructions describe Rust CLI 3.1.9; the same short workflow exists in 2.3+. `convert` submits the design, discovers pages and waits up to 300 seconds for previews. Use its returned `taskId` as the same TASK for every later command. Never look up or switch to internal conversion IDs.
+The bundled instructions describe Rust CLI 3.2.0; use its returned `taskId` as the same TASK throughout. Existing tasks start with `status TASK` or `wait TASK`, without creating another conversion.
 
-For multiple pages, use `convert URL --pages 1,3`. It does not guess which pages the user wants. To preview, check out or download one selected design page, add its number, e.g. `preview TASK --page 3 --out ./page3.webp`. Page numbers are 1-based. If several pages were converted, omitting `--page` reports the available numbers.
+`preview TASK` returns `previewUrl`. Present that link unchanged so the user can view the design in the Web interface. Web handles interactive layer previews. To save a whole-page image, use `preview TASK --out ./preview.webp`. Preview links last seven days; run preview again for a fresh link to the same task. These private links are intended for delivery to the requesting user; do not publish them or extract their access information.
 
-A timeout preserves the task and returns `error.taskId`; resume with `wait TASK --seconds 300`. Existing tasks start with `status TASK` or `wait TASK`, without creating another task. If discovery finds several pages without a selection, read `error.availablePages`, ask the user to choose, run `select TASK PAGE_NUMBERS`, then `wait TASK`. File and payment results retain that TASK as `data.taskId` and expose `data.page`. Keep the same TASK throughout. `status` reports selected page numbers and their readiness.
+For multiple pages, use `convert URL --pages 1,3`. If the user has not specified pages, read `error.availablePages`, ask which pages to convert, run `select TASK PAGE_NUMBERS`, then `wait TASK`. Page numbers start at 1. `preview TASK` opens the task overview; add `--page 3` for a selected page. Checkout, download and image saving require `--page N` when several pages were converted.
 
-`convert`, `create` and `select` print a submission key before sending. After an uncertain `convert` response, reuse its `submitKey` via `--key UUID` with identical URL, page selection, email, locale and layer-naming settings. `convert` uses the task ID as its page-selection submission key, so resuming the same conversion does not create duplicate pages. Both keys remain separate from secret task access credentials.
+`checkout` returns a hosted `checkoutUrl`. Present it unchanged. The user chooses and completes payment on the Web page. `download` checks payment before saving the PSD. `payment status TASK` checks payment separately; `payment confirm` may capture funds and requires payment confirmation authorization.
 
-`checkout` returns a CanvaToPSD-hosted payment link. Present its `checkoutUrl` unchanged: it establishes task access in whichever browser opens it, then displays the task page with previews, price and PayPal/Creem payment controls. The user chooses the payment method there; opening the link does not redirect automatically to a provider. Do not substitute an earlier raw payment-provider link. The hosted link is valid for 7 days; run `checkout` again for a fresh link to the same order. `download` synchronizes payment before fetching the file; `payment status TASK` provides a separate status check; `payment confirm` may capture funds and requires payment confirmation authorization.
+A timeout preserves the task and returns `error.taskId`; resume with `wait TASK --seconds 300`. If a task requires input, inspect `status TASK` and report the relevant page and message. Do not repeatedly submit it.
 
-Deliver the saved PSD link and preview when available. Report dimensions, layers, fonts and validation only when supported by actual returned data or inspection. Readiness, preview, payment and verified download are separate milestones; download alone does not prove Photoshop reopening or semantic editability. File writes refuse overwrites. In this repository, generated output belongs under `.tmp/artifacts/`.
+Submission commands print a submission key before sending. After an uncertain response, reuse `--key UUID` with the identical URL, pages, email, locale and layer-naming settings. Keep the same task and key when recovering; neither is a replacement for saved task access.
 
-## Conditional operations
+Optional `--email EMAIL` enables notifications. `--locale CODE` sets task-page and notification language; omission uses English. It does not change PSD content or layer naming. `--no-layer-naming` skips model naming while retaining readable local names. Inspect command discovery for allowed values; report unsupported options without silently changing the request.
 
-Read [references/operations.md](references/operations.md) only for credential backup/import, missing task access, direct API/operator calls, configuration details, font/layer preview files, or CLI installation. It includes retry and endpoint constraints. Raw task credentials and exported access files are secret; do not attach them to chat. The opaque hosted `checkoutUrl` is intended for delivery to the paying user.
+Deliver the saved PSD path and preview link when available. Report dimensions, layers, fonts and validation only from returned data or actual inspection. Preview readiness, payment, verified download and Photoshop reopening are separate milestones. File writes refuse overwrites. Repository-generated output belongs under `.tmp/artifacts/`.
 
-For Skill discovery use `canvatopsd skill status codex`; install with `skill install codex` or `skill install --dir ./.agents/skills`. Review existing local edits before `--replace`, which replaces the whole Skill directory. Start a new Agent session to refresh an already loaded Skill catalog.
+## Installation and recovery
+
+Read [references/operations.md](references/operations.md) for installation, font downloads, task-access backup/import or Skill updates. Task access is managed by the CLI; do not print local credentials or attach access backups to chat. Use supported commands rather than constructing Web URLs, calling internal APIs or handling preview resources.

@@ -76,6 +76,7 @@ pub fn run(client: &mut Client, command: &Auth) -> Result<Value> {
         }
         Auth::Import { file } => {
             let content = std::fs::read_to_string(file)?;
+            let mut path = "/task/access/exchange";
             let input = if content.trim_start().starts_with('{') {
                 let saved: Credential = serde_json::from_str(&content)?;
                 if saved.format != "canvatopsd-task-access-v1"
@@ -98,16 +99,21 @@ pub fn run(client: &mut Client, command: &Auth) -> Result<Value> {
                     url::form_urlencoded::parse(url.fragment().unwrap_or("").as_bytes())
                         .into_owned()
                         .collect();
-                let token = fragment
-                    .get("access")
-                    .ok_or_else(|| invalid("Private task link is missing access"))?;
-                let mut value = json!({"taskId":task,"token":validation::token(token)?});
-                if let Some(event) = fragment.get("email") {
-                    value["emailEventId"] = json!(event);
+                if let Some(ticket) = fragment.get("preview") {
+                    path = "/task/preview/link/open";
+                    json!({"taskId":task,"ticket":ticket})
+                } else {
+                    let token = fragment
+                        .get("access")
+                        .ok_or_else(|| invalid("Private task link is missing access"))?;
+                    let mut value = json!({"taskId":task,"token":validation::token(token)?});
+                    if let Some(event) = fragment.get("email") {
+                        value["emailEventId"] = json!(event);
+                    }
+                    value
                 }
-                value
             };
-            let result = client.json("/task/access/exchange", &input)?;
+            let result = client.json(path, &input)?;
             client.json("/task/status", &json!({"taskId":field(&input,"taskId")?}))?;
             Ok(result)
         }

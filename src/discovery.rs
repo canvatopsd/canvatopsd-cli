@@ -55,7 +55,7 @@ fn effects(path: &[&str]) -> Value {
     result
 }
 
-fn describe(command: &clap::Command, parents: &[&str]) -> Value {
+fn describe(command: &clap::Command, parents: &[&str], advanced: bool) -> Value {
     let mut path = parents.to_vec();
     if !parents.is_empty() || command.get_name() != "canvatopsd" {
         path.push(command.get_name());
@@ -65,7 +65,7 @@ fn describe(command: &clap::Command, parents: &[&str]) -> Value {
             "variadic":argument.get_num_args().is_some_and(|range| range.max_values() > 1),
             "description":argument.get_help().map(ToString::to_string),"schema":argument_schema(argument)})
     }).collect::<Vec<_>>();
-    let options = command.get_arguments().filter(|argument| argument.get_long().is_some()).map(|argument| {
+    let options = command.get_arguments().filter(|argument| argument.get_long().is_some() && (advanced || !argument.is_hide_set())).map(|argument| {
         let mut flags = format!("--{}", argument.get_long().unwrap());
         if argument.get_action().takes_values() {
             let name = argument.get_value_names().and_then(|values| values.first())
@@ -79,9 +79,9 @@ fn describe(command: &clap::Command, parents: &[&str]) -> Value {
     }).collect::<Vec<_>>();
     json!({"name":command.get_name(),"description":command.get_about().map(ToString::to_string),
         "advanced":command.is_hide_set(),"effects":effects(&path),"arguments":arguments,"options":options,
-        "commands":command.get_subcommands().map(|child|describe(child, &path)).collect::<Vec<_>>()})
+        "commands":command.get_subcommands().filter(|child| advanced || !child.is_hide_set()).map(|child|describe(child, &path, advanced)).collect::<Vec<_>>()})
 }
-pub fn discover(path: &str) -> anyhow::Result<Value> {
+pub fn discover(path: &str, advanced: bool) -> anyhow::Result<Value> {
     let mut root = Cli::command();
     root.build();
     let mut command = &root;
@@ -100,6 +100,6 @@ pub fn discover(path: &str) -> anyhow::Result<Value> {
     let product: Value =
         serde_json::from_str(include_str!(concat!(env!("OUT_DIR"), "/product.json")))?;
     Ok(
-        json!({"version":env!("CARGO_PKG_VERSION"),"product":product,"output":"JSON envelope on stdout; diagnostics on stderr; help/version are text","exitCodes":{"success":0,"failure":1},"command":describe(command, &names[..names.len().saturating_sub(1)])}),
+        json!({"version":env!("CARGO_PKG_VERSION"),"product":product,"output":"JSON envelope on stdout; diagnostics on stderr; help/version are text","exitCodes":{"success":0,"failure":1},"command":describe(command, &names[..names.len().saturating_sub(1)], advanced)}),
     )
 }

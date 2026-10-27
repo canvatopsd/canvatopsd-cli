@@ -1,191 +1,75 @@
 # CanvaToPSD CLI
 
-The default endpoint is **prod**, `https://canvatopsd.com/api`. The Rust npm launcher requires Node.js 22.16+ and an agent with standard shell access. Business results already use JSON; do not add `--json`.
+Use stable task commands for conversion, previews, payment and downloads. The CLI uses the hosted service by default. It requires Node.js 22.16+ and shell access; no account or API key is needed. Business results are JSON; do not add `--json`.
 
 ## Normal workflow
 
-Since CLI 2.3, use the single `taskId` returned by `convert` as the same `TASK` throughout:
-
 ```sh
 canvatopsd convert 'CANVA_PUBLIC_VIEW_URL'
-canvatopsd preview TASK --out .tmp/artifacts/preview.webp
+canvatopsd preview TASK
 canvatopsd checkout TASK
 # After the user pays:
-canvatopsd download TASK --out .tmp/artifacts/design.psd
+canvatopsd download TASK --out ./design.psd
 ```
 
-`convert` submits the design, discovers pages and waits for previews. A single page is handled automatically. For multiple pages, select explicitly with `--pages 1,3`; the CLI never guesses. Later operations use design page numbers, without requiring internal conversion IDs:
+Keep the returned `taskId` as the same TASK throughout. `preview` returns a private `previewUrl` that opens the Web task page. Share it unchanged with the requesting user. Web handles task access, layer rendering and preview interaction. The link lasts seven days; repeat preview to refresh it without creating another task or payment.
+
+To save a whole-page image, use `preview TASK --out ./preview.webp`. The CLI does not expose layer metadata, atlas files or internal file-page identifiers.
+
+## Multiple pages
 
 ```sh
 canvatopsd convert 'CANVA_PUBLIC_VIEW_URL' --pages 1,3
-canvatopsd preview TASK --page 3 --out .tmp/artifacts/page3.webp
+canvatopsd preview TASK --page 3
 canvatopsd checkout TASK --page 3
-canvatopsd download TASK --page 3 --out .tmp/artifacts/page3.psd
+canvatopsd download TASK --page 3 --out ./page3.psd
 ```
 
-`TASK` remains the same task ID. `--page` is a 1-based design page number, not the file manifest's pageId. Use the advanced `--artifact-page ID` option for preview/download only when an internal file page is needed. When several pages are selected and no page number is supplied, the CLI reports an error listing the available page numbers.
+Page numbers start at 1. `preview TASK` opens the overview even when several pages were selected. Image saving, checkout and download require a specific page when several were converted. Missing selections return `availablePages` and `nextAction`.
 
-## Waiting, status and recovery
+For a design with several pages and no initial choice, use `pages TASK`, ask the user which pages to convert, then run `select TASK 1,3` and `wait TASK`. Do not create another task.
 
-The `convert --seconds 300` deadline covers discovery, page-selection submission, status requests and polling. The initial creation request separately uses the global `--timeout`. A timeout does not cancel conversion; the error includes `taskId` and `submitKey`. Resume with `wait TASK`. Use `status TASK` to inspect selected page numbers, each page's status and required input. A multi-page task becomes ready only when all selected pages are ready.
+## Status and recovery
 
-A multi-page design without `--pages` returns `page_selection_required` and preserves the task. Run `select TASK 1,3`, then `wait TASK`. Existing tasks do not require another convert.
+`status TASK` reports selected pages, progress, payment state and required input. `wait TASK --seconds 300` waits within a deadline; timeout preserves the task. A multi-page conversion is ready when all selected pages are ready. When a page needs input, report its page number and message.
 
-Convert writes its initial submission key to stderr before the request and includes it in the result or error. After an uncertain response, retry with the original URL, page selection, email, locale, layer-naming settings and `--key UUID`. Page selection uses the task ID as a stable idempotency key. A request that conflicts with an already confirmed selection fails explicitly instead of creating another set of pages. To resume waiting alone, use wait without resubmitting.
+Submission commands print a submission key before sending. After an uncertain response, retry with the same key and identical URL, pages, email, locale and layer-naming settings. To continue waiting alone, use wait. `--dry-run` validates submission options without submitting or saving credentials. `checkout --dry-run` checks the live selected page without creating a payment.
 
-## Common commands
+## Payment and files
 
-| Command                                        | Purpose                                                                                   |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `convert URL [--pages 1,3]`                    | Submit and wait for previews; return the task ID used afterward                           |
-| `status TASK` / `wait TASK`                    | Inspect selected pages / wait within a bounded deadline                                   |
-| `preview TASK --out FILE`                      | Save a preview                                                                            |
-| `checkout TASK`                                | Create a checkout link for the user to pay                                                |
-| `download TASK --out FILE`                     | Synchronize payment and download; verify size and SHA-256                                 |
-| `pages TASK` / `select TASK 1,3`               | Inspect and select pages in a separate-step workflow                                      |
-| `payment status TASK` / `payment confirm TASK` | Synchronize payment separately / confirm an authorized payment; confirm may capture funds |
-| `files TASK`                                   | List paid files                                                                           |
-| `create URL`                                   | Submit only, without discovery or waiting                                                 |
-| `doctor`                                       | Check API routing and the task-credential protocol                                        |
+`checkout TASK` returns a hosted `checkoutUrl`. Give it to the user unchanged. Opening it establishes task access and shows previews, prices and payment controls. The user chooses the payment method there. The entry lasts seven days; repeat checkout for a fresh entry to the same order.
 
-`preview`, `checkout`, `download`, `files`, `payment status` and `payment confirm` support `--page NUMBER`. The normal workflow does not require a separate payment command.
+`download` checks payment before saving. `payment status TASK` checks it separately; `payment confirm TASK` may capture approved funds and requires payment authorization.
 
-`checkoutUrl` is a CanvaToPSD-hosted checkout entry. Give it to the user unchanged; do not substitute an old PayPal URL. It establishes a task cookie in the browser that opens it, then displays the same task page, price, previews and PayPal/Creem payment controls as the Web workflow. The user chooses the payment method on that page; opening the link does not redirect automatically to a payment provider. This also works for existing orders and does not require opening a private task link first. The entry lasts seven days. Run checkout again to obtain a fresh entry without reconverting or creating another payment order. The API unit maintains the protocol in `doc/task-return-routing.md`.
+Downloads default to PSD. Use `--format fonts` for a ZIP archive or `--format font-list` for a text list. Add `--page N` for a selected design page. `files TASK --page N` lists available download formats and sizes. Transfers verify size and SHA-256, preserve existing output files and leave no final file on integrity failure. A successful transfer does not establish Photoshop reopening or visual fidelity.
 
-`convert`, `create` and `select` with `--dry-run` validate locally without saving credentials or submitting a task. `checkout --dry-run` reads the live quote without creating a payment. Business status is fetched each time; the CLI does not save a latest task or cache quotes.
+## Optional settings and task access
 
-Downloads default to `page-0001.psd`. Use `--file fonts.zip` or `--file fonts.txt` for fonts, and `--file preview-layers.json` / `preview-layers.webp` for layer previews. Existing destination files cause an explicit error. A preview does not establish payment, and a successful download does not establish native Photoshop opening or semantic editability.
+`--email EMAIL` enables notifications. `--locale CODE` sets task-page and notification language, independently of PSD content and layer naming; omission uses English. `--no-layer-naming` skips model naming while keeping readable local names. Additional pages inherit parent settings. Inspect `discover convert` for supported values. Older services may reject explicit locale; report the error without changing the input or retrying a mutation.
 
-## Task credentials and optional email
+The CLI saves task access automatically. Do not print its local configuration or credentials. Back up with `auth export TASK FILE`; restore with `auth import FILE`. Export the parent task when it authorizes selected pages. A complete private task-link file can also be imported. Imports require the same service. See [task recovery](../skills/canvatopsd/references/operations.md).
 
-No account, API key or email is required. For each new submission, the CLI generates a separate random token and saves it in its local mode-0600 configuration before sending the request. The API stores only a hash and returns the task cookie. The token is never printed. A retry with `--key UUID` reuses the saved token. `auth status` lists saved submission keys. A submission key alone cannot issue replacement access credentials.
+For HTTP 401/403, restore matching task access. For `ELOCKED`, wait for the other settings writer to finish. A task ID or submission key alone cannot restore access. `auth clear` removes local access for the selected service and should only be used intentionally.
 
-`--locale CODE` on convert/create sets the task page and notification language, independently of PSD content and layer naming. Supported codes come from `discover convert` (for example `zh`, `zh-tw`, `pt-br`). Omission sends no locale field and uses the API default, English. Additional pages inherit their parent task language. Explicit locale requires an API release supporting that field; older strict schemas return `command_invalid`. Doctor does not negotiate locale support. Report rejection without silently changing the input or retrying a mutation.
-
-`--no-layer-naming` skips model naming; the service still assigns readable local type names and numbers while creating the PSD.
-
-`--email EMAIL` enables email notifications. Without it, creation, conversion readiness, manual-input requests and payment produce no notification emails. Inspect required input through status/wait. Original credentials remain valid after readiness and payment; parent credentials authorize direct child tasks. The CLI sends only the target or parent credentials. Responses to select, pages and parent status save authorized relationships. For child tasks created by an older version, query parent status once to restore the relationship.
-
-To back up credentials or move machines:
-
-```sh
-canvatopsd auth export TASK .tmp/artifacts/task-access.json
-# On another machine using the same service environment:
-canvatopsd auth import /absolute/task-access.json
-```
-
-The export contains one task's secret credentials, uses mode 0600 and refuses overwrites. Do not upload it to Git or paste it into chat. When a child uses parent authorization, export the parent. Select the matching service endpoint before importing. Existing files containing emailed private links can still be imported, including language prefixes such as `zh-tw` and `pt-br`. `auth clear` removes cookies, retry tokens and parent/child relationships for the selected endpoint. Without email, losing both local credentials and backups prevents self-service access recovery.
-
-Payment remains task-based; an API key or email is not a payment requirement. Query `payment status TASK` after the user approves payment. Run `payment confirm TASK` only with authorization to confirm payment. Payment webhooks can update status; existing task credentials continue to authorize downloads.
-
-This flow requires API support for taskToken and optional email. An older API rejects the request explicitly. The CLI still defaults to prod; API prod releases are separate.
-
-## Installation and Skill
-
-The npm package is `@canvatopsd/cli`; the executable is `canvatopsd`. Install the published Rust package with:
-
-```sh
-npm install -g @canvatopsd/cli
-canvatopsd --version
-canvatopsd skill install codex
-```
-
-Website downloads follow the independent Web release. For the Rust CLI, use the scoped npm package or run it without a global installation:
-
-```sh
-npx --yes @canvatopsd/cli --help
-npm install -g @canvatopsd/cli
-```
-
-For local installation from standalone source, run at the repository root:
-
-```sh
-npm ci --cache .tmp/npm-cache
-npm run check
-npm pack
-npm run deploy:local
-canvatopsd skill install codex
-```
-
-In the product monorepo, use corresponding `npm --prefix cli ...` commands, such as `npm --prefix cli run check`, and explicitly put npm cache in the monorepo root `.tmp/npm-cache`. Build tools find the actual Git root, so each checkout keeps temporary files in its own root `.tmp/`.
-
-Deployment installs the checked archive globally through npm; `npm prefix -g` determines its location. Run npm pack first, then deploy:local. Deployment unpacks and checks the actual archive before installation. It updates only the CLI, without releasing Web/API/Runner. The hosted protocol is implemented in Rust; no private API source checkout is required.
-
-Skill targets `codex`, `claude-code`, `cursor`, `copilot` and `agents` use `.codex/skills`, `.claude/skills`, `.cursor/skills`, `.copilot/skills` and `.agents/skills` under the user directory. The default is codex. Use `canvatopsd skill install --dir /path/to/project/.agents/skills` for a project directory. Existing Skills cause an explicit error rather than overwriting manual edits.
-
-Skill source is [skills/canvatopsd/SKILL.md](../skills/canvatopsd/SKILL.md). Any agent supporting generic Agent Skills and shell access can use it. If automatic discovery is unavailable, ask the agent to read that file.
-
-To distribute an installation package without npm login, run from the CLI repository root, or `cli/` in the product monorepo:
-
-```sh
-npm pack
-npm install -g ./releases/canvatopsd-cli-VERSION.tgz
-```
-
-Replace VERSION with the actual version. The package includes the README, usage guide and complete Skill; runtime execution does not download dependencies or access the source repository. `.npmrc` directs package output to `releases/canvatopsd-cli-VERSION.tgz`. Formal archives are tracked in Git and preserved by version. Never overwrite an existing version; run `npm version patch` or explicitly select a new version before repackaging. Build caches and acceptance evidence stay in the untracked root `.tmp/`. Packaged `release.json` records version, source commit, build time and native targets. Packages do not recursively include releases/.
-
-Maintainers publish the exact checked archive using `npm run release:npm`.
-`npm run release:npm -- --dry-run` verifies publication readiness without publishing.
-All five targets need native acceptance receipts matching the source revision,
-version and binary digest. See the [source release checklist](https://github.com/canvatopsd/canvatopsd-cli/blob/main/doc/releasing.md).
-Publishing requires access to the npm scope and a fresh immutable version.
-If packaging is interrupted, run `npm run postpack` before retrying.
-
-## Configuration and advanced commands
-
-Prod works without initialization. `canvatopsd init` saves prod; `canvatopsd init http://127.0.0.1:8080/api` explicitly selects local. Use global `--base-url URL` for a temporary endpoint. `--origin` is only for the local proxy's Origin check. `--timeout` is the per-request timeout in seconds, default 30.
-
-Configuration precedence is arguments > environment > configuration file > defaults. `CANVATOPSD_BASE_URL` and `CANVATOPSD_ORIGIN` supply connection settings. `CANVATOPSD_CONFIG` defaults to `~/.config/canvatopsd/config.json`. It stores connection settings, cookies and retry tokens, with mode 0600. Updates use a file lock, reread the latest content inside the lock and merge only the current changes. Contention returns ELOCKED explicitly; retry after the other command finishes. Uncertain creation still reuses --key. Multiple agents can isolate credentials with CANVATOPSD_CONFIG.
-
-Normal Web calls require no operator token. Direct API operator queries use CANVATOPSD_OPERATOR_TOKEN; direct API customer commands also require CANVATOPSD_PROXY_TOKEN. Operator identity does not replace task cookies. HTTPS uses both Node and system trust stores without disabling certificate validation.
-
-```sh
-canvatopsd resolve 'CANVA_URL'
-canvatopsd --base-url http://127.0.0.1:8797 operator task-list --offset 0
-canvatopsd request /task/status --body .tmp/request.json
-```
-
-`operator notification-status TASK` reads notification records. Task lists use pages of 100. Request always uses POST; --operator adds operator authorization, and --out FILE saves binary data. The API provider maintains request structures under api/contracts/. The standalone Rust CLI constructs requests directly and has no runtime TypeScript contracts dependency. Its src/ui-locale.schema.json is an explicit snapshot of the provider-owned language schema. Raw commands can change business data and are not read-only diagnostics.
-
-## Output and errors
-
-Success writes `{"ok":true,"data":...}` to stdout and exits 0. Failure writes `{"ok":false,"error":{"code":"...","message":"..."}}` and exits 1. API errors also include HTTP status; submission errors include submitKey. Help and version use text. Stderr carries diagnostics such as submission keys.
-
-For 401/403, restore credentials from a matching-environment backup or emailed private link; the file must include the complete `/task/UUID#access=...` address. Do not print private links or configuration contents. For 409, inspect task status and handle its code. After wait_timeout, continue querying; the background task is not canceled. Doctor uses read-only `POST /task/protocol/read` to check actual API routing, database access, taskToken and optional-email support. An unsupported API or unsynchronized Web route fails explicitly. Passing doctor does not validate a task's credentials, Runner, payment or delivery.
-
-Version 2.0 replaced task create/status/wait, page list/request, preview list/download and delivery list/download with the shorter commands above. Legacy arguments have no compatibility layer.
-
-## Agent discovery and self-service
+## Discovery and Skill installation
 
 ```sh
 canvatopsd --help
-canvatopsd create --help
 canvatopsd discover
-canvatopsd discover skill install
+canvatopsd discover preview
 canvatopsd skill show
 canvatopsd skill status codex
-# After reviewing and authorizing replacement of the installed Skill:
-canvatopsd skill install codex --replace
+canvatopsd skill install codex
 ```
 
-`discover [command]` returns an offline JSON command tree. Arguments, options, required fields and defaults come directly from actual command definitions, with parameter schemas and side-effect guidance. Nested paths accept separate words or a quoted string, e.g. `discover skill install`. Discovery reads no credentials, connects to no service and submits no task. Replace example placeholders before execution.
+Default discovery lists product commands and their actual arguments, defaults, allowed values and effects. It works offline without credentials. Help and version are text; business commands return `{"ok":true,"data":...}` or `{"ok":false,"error":...}` with exit code 1. Diagnostics use stderr.
 
-Skill show returns the bundled entry document as JSON. Skill status compares installed and bundled files and reports missing or changed files. Current only means file equality; it does not establish that an agent loaded the Skill, PATH is correct or the service is healthy. A successful command in the target agent's terminal establishes that terminal can find the CLI. Start a new agent session after installation or updates to refresh discovery.
+Skill installation supports codex, claude-code, cursor, copilot, agents or a custom `--dir`. Review local edits before `--replace`; it replaces the whole installed directory. Start a fresh Agent session after an update.
 
-Skill install --replace explicitly replaces the entire target Skill directory, including manual edits. The default refuses overwrites. Installation supports codex, claude-code, cursor, copilot, agents or a custom --dir. Codex uses CODEX_HOME/skills when configured. SKILL.md contains task selection, the shortest workflow and delivery conditions; credential recovery and advanced operations are loaded from references/operations.md as needed.
+## Maintainer access and release compatibility
 
-A project can add this to its existing agent instructions: “Use the canvatopsd Skill for Canva to PSD conversion, task previews and downloads. Run canvatopsd discover for the command index.” This repository's entry is skills/canvatopsd/SKILL.md. No MCP server is needed for shell-based use; remote or shell-free integrations require separate evaluation.
+`discover --advanced` includes maintenance commands and connection settings. Explicit discovery of a maintenance command is also supported. Those commands are outside the ordinary conversion workflow; raw requests retain API response structures. See the [complete command reference](command-reference.md) and maintainer help when an explicitly requested operation requires them.
 
-## Compatibility and advanced help
+CLI 3.2 replaces preview resource selection with a Web entry and whole-page image saving. Download selection uses `--format psd|fonts|font-list`; internal `--artifact-page` and artifact `--file` options have been removed. Existing task IDs, credentials and submission keys remain usable. The preview-link API and Web entry handler must be deployed before this CLI is publicly distributed. An older service fails explicitly; the CLI does not substitute checkout or build a URL locally.
 
-Use `payment status TASK` and `payment confirm TASK`. Legacy `payment TASK` and
-`confirm TASK` remain supported. A payment confirmation may capture approved funds.
-The default help groups common commands; `create`, `files`, `init`, `resolve`,
-`operator` and `request` remain available by name. Internal `--artifact-page`,
-artifact `--file` names and `--origin` remain supported and appear in discovery
-and the generated full reference rather than default terminal help.
-
-Normal preview, download, file listing and payment results expose the original
-`taskId` and a design `page`. Page-selection errors provide `availablePages`
-and `nextAction`; ask the user to select from those values. Raw request and
-operator calls deliberately retain the provider response.
+`doctor` checks the base service protocol. It does not verify every optional capability, task authorization, Runner readiness, payment or Photoshop compatibility. Local, npm and website releases can differ; identify each channel separately before quoting availability.

@@ -29,11 +29,13 @@ In Canva, choose **Share → Public view link → Copy link**. Copied `canva.lin
 ```sh
 canvatopsd convert 'CANVA_PUBLIC_VIEW_URL'
 # Replace TASK with the returned taskId:
-canvatopsd preview TASK --out ./preview.webp
+canvatopsd preview TASK
 canvatopsd checkout TASK
 # After the user completes payment through the returned checkoutUrl:
 canvatopsd download TASK --out ./design.psd
 ```
+
+Share the returned `previewUrl` unchanged to open the Web preview. For a whole-page image, use `preview TASK --out ./preview.webp`. Web owns interactive layer previews.
 
 Keep the same task ID throughout. Conversion and previews are free; PSD downloads require payment at the [current price](https://canvatopsd.com/pricing). An email address is optional for notifications.
 
@@ -43,7 +45,7 @@ For multiple pages, choose the design page numbers explicitly:
 
 ```sh
 canvatopsd convert 'CANVA_PUBLIC_VIEW_URL' --pages 1,3
-canvatopsd preview TASK --page 3 --out ./page3.webp
+canvatopsd preview TASK --page 3
 canvatopsd checkout TASK --page 3
 canvatopsd download TASK --page 3 --out ./page3.psd
 ```

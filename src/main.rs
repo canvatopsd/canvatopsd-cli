@@ -27,13 +27,15 @@ fn run(cli: Cli) -> Result<Value> {
     let options = &cli.options;
     // Offline commands deliberately do not read credentials or initialize networking.
     match &cli.command {
-        Command::Discover { command } => return discovery::discover(&command.join(" ")),
+        Command::Discover { command, advanced } => {
+            return discovery::discover(&command.join(" "), *advanced);
+        }
         Command::Skill { command } => return skill::run(command),
         Command::Resolve { url } => {
             let parsed = url::Url::parse(url).map_err(|_| error::invalid("Invalid URL"))?;
             return if let Some(task) = validation::task_link(&parsed)? {
                 Ok(
-                    json!({"taskId":task,"hasAccess":url::form_urlencoded::parse(parsed.fragment().unwrap_or("").as_bytes()).any(|(k,_)| k == "access")}),
+                    json!({"taskId":task,"hasAccess":url::form_urlencoded::parse(parsed.fragment().unwrap_or("").as_bytes()).any(|(k,_)| k == "access" || k == "preview")}),
                 )
             } else {
                 validation::canva_link(url)
@@ -96,14 +98,17 @@ fn run(cli: Cli) -> Result<Value> {
         } => {
             let body = tasks::selection(task, pages, key.as_deref())?;
             if *dry_run {
-                return Ok(json!({"path":"/task/page-request/create","input":body,"dryRun":true}));
+                return Ok(
+                    json!({"taskId":task,"pages":body["pages"],"submitKey":body["submitKey"],"dryRun":true}),
+                );
             }
-            return client::submit(
+            client::submit(
                 &mut context(options)?,
                 "/task/page-request/create",
                 &body,
                 None,
-            );
+            )?;
+            return Ok(json!({"taskId":task,"pages":body["pages"],"submitKey":body["submitKey"]}));
         }
         _ => (),
     }
@@ -131,37 +136,15 @@ fn run(cli: Cli) -> Result<Value> {
         }
         Command::Status { task } => tasks::summary(&tasks::read_status(&mut client, task, None)?),
         Command::Wait { task, seconds } => tasks::wait(&mut client, task, *seconds, None),
-        Command::Pages { task, refresh } => {
-            let mut input = validation::task_input(task)?;
-            input["refresh"] = json!(refresh);
-            client.json("/task/source-page/list", &input)
+        Command::Pages { task, refresh } => tasks::source_pages(&mut client, task, *refresh),
+        Command::Preview { selection, out } => {
+            artifacts::preview(&mut client, &selection.task, selection.page, out.as_deref())
         }
-        Command::Preview {
-            selection,
-            out,
-            artifact_page,
-            file,
-        } => artifacts::preview(
-            &mut client,
-            &selection.task,
-            selection.page,
-            artifact_page.as_deref(),
-            file,
-            out.as_deref(),
-        ),
         Command::Download {
             selection,
             out,
-            artifact_page,
-            file,
-        } => artifacts::download(
-            &mut client,
-            &selection.task,
-            selection.page,
-            artifact_page.as_deref(),
-            file,
-            out,
-        ),
+            format,
+        } => artifacts::download(&mut client, &selection.task, selection.page, format, out),
         Command::Files(selection) => artifacts::files(&mut client, &selection.task, selection.page),
         Command::Payment(input) => {
             if let Some(command) = &input.command {
