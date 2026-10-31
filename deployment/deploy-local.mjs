@@ -37,4 +37,7 @@ const version = execFileSync(process.execPath, [entry, "--version"], {
 }).trim();
 if (version !== metadata.version)
   throw new Error("Installed npm CLI version mismatch");
+execFileSync(process.execPath, [entry, "init", "--internal"], {
+  stdio: "inherit",
+});
 console.log(JSON.stringify({ environment: "local", archive, version, entry }));

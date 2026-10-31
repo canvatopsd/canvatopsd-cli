@@ -1,6 +1,6 @@
 # CanvaToPSD CLI command reference
 
-Generated from Rust CLI 3.3.2 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
+Generated from Rust CLI 3.3.3 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
 
 Use this page to inspect every command without installing or executing the CLI. For capabilities, installation availability and pricing boundaries, read [product facts](product-facts.md). For task recovery and credential handling, read [Agent guidance](agent-discovery.md).
 
@@ -352,9 +352,13 @@ Network: offline. Server action: none.
 canvatopsd init [url] [OPTIONS]
 ```
 
-| Argument | Required | Description                                                |
-| -------- | -------- | ---------------------------------------------------------- |
-| `url`    | no       | HTTPS service endpoint, or loopback HTTP; defaults to prod |
+| Argument | Required | Description                                                                      |
+| -------- | -------- | -------------------------------------------------------------------------------- |
+| `url`    | no       | HTTPS service endpoint, or loopback HTTP; defaults to the saved endpoint or prod |
+
+| Option       | Required | Default | Description / allowed values                                              |
+| ------------ | -------- | ------- | ------------------------------------------------------------------------- |
+| `--internal` | no       | false   | Mark submissions from this CLI installation as internal operator activity |
 
 ## canvatopsd auth
 

@@ -26,6 +26,8 @@ pub struct Settings {
     pub submission_tokens: BTreeMap<String, Entries>,
     #[serde(default)]
     pub task_parents: BTreeMap<String, Entries>,
+    #[serde(default)]
+    pub internal_submissions: bool,
     #[serde(flatten)]
     pub extra: BTreeMap<String, serde_json::Value>,
 }
@@ -33,6 +35,7 @@ pub struct Connection {
     pub base_url: String,
     pub origin: String,
     pub timeout: u64,
+    pub internal_submissions: bool,
     pub cookies: Entries,
     pub parents: Entries,
     pub operator_token: Option<String>,
@@ -172,6 +175,7 @@ pub fn connection(options: &Options, settings: &Settings) -> Result<Connection> 
         base_url,
         origin,
         timeout: options.timeout,
+        internal_submissions: settings.internal_submissions,
         operator_token: env::var("CANVATOPSD_OPERATOR_TOKEN").ok(),
         proxy_token: env::var("CANVATOPSD_PROXY_TOKEN").ok(),
     })

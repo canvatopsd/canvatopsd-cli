@@ -29,6 +29,9 @@ pub fn receive(client: &mut Client, mut input: Value) -> Result<Value> {
     if id.get_version_num() != 7 {
         return Err(invalid("Inbox returned an invalid submission UUIDv7"));
     }
+    if client.config.internal_submissions {
+        input["client"]["internal"] = json!(true);
+    }
     input["submissionId"] = json!(key);
     input["taskToken"] = json!(auth::submission_token(&client.config, &key)?);
     eprintln!("{}", json!({"submitKey":key,"taskId":key}));

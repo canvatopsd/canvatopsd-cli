@@ -44,22 +44,27 @@ fn run(cli: Cli) -> Result<Value> {
                 validation::canva_link(url)
             };
         }
-        Command::Init { url } => {
+        Command::Init { url, internal } => {
+            let saved = config::read()?;
             let init = args::Options {
                 base_url: Some(
                     url.clone()
+                        .or_else(|| saved.base_url.clone())
                         .unwrap_or_else(|| "https://canvatopsd.com/api".into()),
                 ),
                 origin: options.origin.clone(),
                 timeout: 30,
             };
-            let connection = config::connection(&init, &config::Settings::default())?;
+            let connection = config::connection(&init, &saved)?;
             config::update(|settings| {
                 settings.base_url = Some(connection.base_url.clone());
                 settings.origin = Some(connection.origin.clone());
+                settings.internal_submissions = *internal;
                 Ok(())
             })?;
-            return Ok(json!({"baseUrl":connection.base_url,"origin":connection.origin}));
+            return Ok(
+                json!({"baseUrl":connection.base_url,"origin":connection.origin,"internalSubmissions":internal}),
+            );
         }
         Command::Create(input) | Command::Convert { input, .. } => {
             let mut body = tasks::submission(input)?;

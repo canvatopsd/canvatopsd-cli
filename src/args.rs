@@ -136,8 +136,11 @@ pub enum Command {
     /// Save endpoint settings; defaults to prod
     #[command(hide = true)]
     Init {
-        /// HTTPS service endpoint, or loopback HTTP; defaults to prod
+        /// HTTPS service endpoint, or loopback HTTP; defaults to the saved endpoint or prod
         url: Option<String>,
+        /// Mark submissions from this CLI installation as internal operator activity
+        #[arg(long)]
+        internal: bool,
     },
     /// Import, export or inspect local task credentials
     Auth {

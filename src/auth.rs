@@ -38,7 +38,7 @@ pub fn run(client: &mut Client, command: &Auth) -> Result<Value> {
         Auth::Status => {
             let settings = config::read()?;
             Ok(
-                json!({"submissionKeys":settings.submission_tokens.get(&client.config.base_url).map(|v| v.keys().collect::<Vec<_>>()).unwrap_or_default(),"baseUrl":client.config.base_url,"taskSessions":client.config.cookies.keys().map(|k| k.trim_start_matches("__Host-canvatopsd-task-")).collect::<Vec<_>>(),"operatorAuth":if client.config.operator_token.is_some() { "env" } else { "missing" }}),
+                json!({"submissionKeys":settings.submission_tokens.get(&client.config.base_url).map(|v| v.keys().collect::<Vec<_>>()).unwrap_or_default(),"baseUrl":client.config.base_url,"internalSubmissions":client.config.internal_submissions,"taskSessions":client.config.cookies.keys().map(|k| k.trim_start_matches("__Host-canvatopsd-task-")).collect::<Vec<_>>(),"operatorAuth":if client.config.operator_token.is_some() { "env" } else { "missing" }}),
             )
         }
         Auth::Clear => {
