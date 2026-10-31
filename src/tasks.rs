@@ -9,11 +9,17 @@ use serde_json::{Value, json};
 use std::time::{Duration, Instant};
 
 pub fn submission(input: &Submission) -> Result<Value> {
-    let key = input
-        .key
-        .clone()
-        .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
-    let mut body = json!({"submitKey":validation::uuid(&key)?,"canvaUrl":validation::canva_link(&input.url)?["url"],"layerNaming":!input.no_layer_naming});
+    let mut body = json!({"canvaUrl":validation::canva_link(&input.url)?["url"],"layerNaming":!input.no_layer_naming});
+    if let Some(key) = &input.key {
+        let id = uuid::Uuid::parse_str(key)
+            .map_err(|_| invalid("Use the original submission UUIDv7 with --key"))?;
+        if id.get_version_num() != 7 {
+            return Err(invalid(
+                "New inbox submissions require a UUIDv7 key; use status or wait for an older task",
+            ));
+        }
+        body["submissionId"] = json!(id.to_string());
+    }
     body["client"] = json!({"channel":"cli","version":env!("CARGO_PKG_VERSION")});
     if let Some(agent) = &input.agent {
         body["client"]["agent"] = json!(client_label(agent, 80)?);
@@ -209,6 +215,10 @@ fn wait_until(
 ) -> Result<Value> {
     loop {
         let status = read_status(client, task, Some(deadline))?;
+        if status["submissionStatus"] == "received" {
+            wait_for_next_read(deadline, task)?;
+            continue;
+        }
         if requires_input(&status) || cancelled(&status) {
             return Err(task_error(
                 "task_requires_attention",
@@ -305,14 +315,19 @@ fn wait_until(
                 return summary(&status);
             }
         }
-        let remaining = deadline.saturating_duration_since(Instant::now());
-        if remaining.is_zero() {
-            return Err(task_error(
-                "wait_timeout",
-                "Conversion wait deadline reached",
-                task,
-            ));
-        }
-        std::thread::sleep(remaining.min(Duration::from_secs(5)));
+        wait_for_next_read(deadline, task)?;
     }
+}
+
+fn wait_for_next_read(deadline: Instant, task: &str) -> Result<()> {
+    let remaining = deadline.saturating_duration_since(Instant::now());
+    if remaining.is_zero() {
+        return Err(task_error(
+            "wait_timeout",
+            "Conversion wait deadline reached",
+            task,
+        ));
+    }
+    std::thread::sleep(remaining.min(Duration::from_secs(5)));
+    Ok(())
 }

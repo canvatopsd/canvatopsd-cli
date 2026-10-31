@@ -3,7 +3,7 @@ name: canvatopsd
 description: Convert public Canva links to editable layered Photoshop PSDs, or retrieve previews and paid files for an existing CanvaToPSD task. Use for Canva to PSD, Canva to Photoshop and layered PSD export. Requires shell access; does not edit existing PSDs or convert arbitrary images/PDFs.
 metadata:
   author: CanvaToPSD
-  version: "3.2.2"
+  version: "3.3.2"
   homepage: https://canvatopsd.com/ai-agent
 ---
 
@@ -25,7 +25,7 @@ canvatopsd checkout TASK
 canvatopsd download TASK --out ./design.psd
 ```
 
-The bundled instructions describe Rust CLI 3.2.2; use its returned `taskId` as the same TASK throughout. Existing tasks start with `status TASK` or `wait TASK`, without creating another conversion.
+The bundled instructions describe Rust CLI 3.3.2; use its returned `taskId` as the same TASK throughout. Existing tasks start with `status TASK` or `wait TASK`, without creating another conversion.
 
 `preview TASK` returns `previewUrl`. Present that link unchanged so the user can view the design in the Web interface. Web handles interactive layer previews. To save a whole-page image, use `preview TASK --out ./preview.webp`. Preview links last seven days; run preview again for a fresh link to the same task. These private links are intended for delivery to the requesting user; do not publish them or extract their access information.
 
@@ -46,3 +46,5 @@ Deliver the saved PSD path and preview link when available. Report dimensions, l
 ## Installation and recovery
 
 Read [references/operations.md](references/operations.md) for installation, font downloads, task-access backup/import or Skill updates. Task access is managed by the CLI; do not print local credentials or attach access backups to chat. Use supported commands rather than constructing Web URLs, calling internal APIs or handling preview resources.
+
+Submission reception uses the shared R2 inbox. `accepted: true` with `status: "received"` confirms durable receipt only; continue with the same task ID until previews are ready. If submission outcome is uncertain, reuse its returned UUIDv7 with `--key` and identical inputs. Do not create another submission to recover an existing task.

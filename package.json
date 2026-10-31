@@ -1,6 +1,6 @@
 {
   "name": "@canvatopsd/cli",
-  "version": "3.2.2",
+  "version": "3.3.2",
   "description": "Canva to PSD converter CLI for AI agents. Export public Canva designs to editable layered Photoshop PSDs with Rust, JSON commands, verified downloads and bundled Agent Skills.",
   "type": "module",
   "bin": {
@@ -15,6 +15,7 @@
     "doc/agent-discovery.md",
     "doc/npm-readme.md",
     "doc/usage.md",
+    "doc/submission-inbox.md",
     "skills",
     "release.json",
     "LICENSE.md",

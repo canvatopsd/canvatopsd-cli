@@ -7,6 +7,7 @@ mod discovery;
 mod error;
 mod payment;
 mod skill;
+mod submission;
 mod tasks;
 mod updates;
 mod validation;
@@ -67,6 +68,9 @@ fn run(cli: Cli) -> Result<Value> {
             } else {
                 None
             };
+            if let Some(pages) = &selection {
+                body["pages"] = json!(pages);
+            }
             if input.dry_run {
                 return if let Command::Convert { seconds, .. } = &cli.command {
                     let mut result = json!({"dryRun":true,"input":body,"seconds":seconds});
@@ -75,13 +79,14 @@ fn run(cli: Cli) -> Result<Value> {
                     }
                     Ok(result)
                 } else {
-                    Ok(json!({"path":"/task/create","input":body,"dryRun":true}))
+                    Ok(
+                        json!({"path":"/submission/create","preparePath":"/submission/prepare","input":body,"dryRun":true}),
+                    )
                 };
             }
             let mut client = context(options)?;
-            let key = field(&body, "submitKey")?.to_owned();
-            body["taskToken"] = json!(auth::submission_token(&client.config, &key)?);
-            let created = client::submit(&mut client, "/task/create", &body, None)?;
+            let created = submission::receive(&mut client, body)?;
+            let key = field(&created, "submitKey")?.to_owned();
             if let Command::Convert { seconds, .. } = &cli.command {
                 let task = field(&created, "taskId")?;
                 eprintln!("{}", json!({"taskId":task}));
