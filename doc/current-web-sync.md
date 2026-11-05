@@ -1,10 +1,10 @@
-# CLI 3.4.10 and current Web
+# CLI 3.4.11 and current Web
 
 This release follows the R2-backed Web product after retirement of the independent Native API and Ops services. It does not modify or deploy Web, Payment, Runner or Email.
 
 ## Behavior changes
 
-- New submissions require a delivery email and retain the initial selected pages; omission selects page 1.
+- New submissions require a delivery email; help and missing-email errors explain that it receives completed PSD and other deliverable download links. They retain the initial selected pages; omission selects page 1.
 - Private task links accept the entry, payment and result routes, including locale prefixes and selected-page queries.
 - Payment reads and confirmation use task-level prepayment commands. Checkout preserves the server-issued link and expiry; Web chooses the payment or result view. No per-page order fallback remains. A requested page is validated before payment confirmation.
 - PSD download and file listing use the current `page-1.psd` delivery name. Transfer size and SHA-256 checks still apply.

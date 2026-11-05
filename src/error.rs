@@ -3,11 +3,16 @@ use std::fmt;
 
 pub fn argument_error(error: &clap::Error) -> Value {
     let reason = error.kind().as_str().unwrap_or("Invalid command arguments");
-    let mut value = CommandError::new(
-        "invalid_input",
-        format!("{reason}. Run canvatopsd COMMAND --help for usage."),
-    )
-    .value();
+    let missing_email = error.kind() == clap::error::ErrorKind::MissingRequiredArgument
+        && matches!(error.get(clap::error::ContextKind::InvalidArg),
+            Some(clap::error::ContextValue::Strings(arguments))
+                if arguments.iter().any(|argument| argument == "--email <EMAIL>"));
+    let message = if missing_email {
+        "--email is required to receive download links for completed PSDs and other deliverables. Ask the user for a delivery email address before submitting.".to_owned()
+    } else {
+        format!("{reason}. Run canvatopsd COMMAND --help for usage.")
+    };
+    let mut value = CommandError::new("invalid_input", message).value();
     // Usage comes from the command schema; other Clap contexts can contain credentials.
     if let Some(clap::error::ContextValue::StyledStr(usage)) =
         error.get(clap::error::ContextKind::Usage)

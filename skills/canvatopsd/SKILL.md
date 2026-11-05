@@ -3,13 +3,13 @@ name: canvatopsd
 description: Convert public Canva links to editable layered Photoshop PSDs, or retrieve previews and paid files for an existing CanvaToPSD task. Use for Canva to PSD, Canva to Photoshop and layered PSD export. Requires shell access; does not edit existing PSDs or convert arbitrary images/PDFs.
 metadata:
   author: CanvaToPSD
-  version: "3.4.10"
+  version: "3.4.11"
   homepage: https://canvatopsd.com/ai-agent
 ---
 
 # CanvaToPSD
 
-Use `canvatopsd` with Node.js 22.16+. No account or API key is required. New submissions require `--email EMAIL`; ask the user for an email address if none was provided. Business commands return JSON: success is `{"ok":true,"data":...}`; failure is `{"ok":false,"error":{"code":"...","message":"..."}}` with exit code 1. Help/version are text. Do not add `--json`.
+Use `canvatopsd` with Node.js 22.16+. No account or API key is required. New submissions require `--email EMAIL`; explain that this address receives download links for the completed PSDs and other deliverables, and ask for their delivery email address if none was provided. Do not guess an address or submit without one. Business commands return JSON: success is `{"ok":true,"data":...}`; failure is `{"ok":false,"error":{"code":"...","message":"..."}}` with exit code 1. Help/version are text. Do not add `--json`.
 
 At the start of an Agent task, run `canvatopsd update check` once before hosted commands. Report whether a newer stable CLI is available. The check returns current/latest versions and an installation command when needed; it does not install anything. A local version ahead of npm is not a downgrade request. If the check fails, report that uncertainty separately; do not claim the CLI is current.
 
@@ -26,7 +26,7 @@ canvatopsd preview TASK
 canvatopsd download TASK --out ./design.psd
 ```
 
-The bundled instructions describe Rust CLI 3.4.10; use its returned `taskId` as the same TASK throughout. Existing tasks start with `status TASK` or `wait TASK`, without creating another conversion.
+The bundled instructions describe Rust CLI 3.4.11; use its returned `taskId` as the same TASK throughout. Existing tasks start with `status TASK` or `wait TASK`, without creating another conversion.
 
 `preview TASK` returns `previewUrl`. Present that link unchanged so the user can view the design in the Web interface. Web handles interactive layer previews. To save a whole-page image, use `preview TASK --out ./preview.webp`. Preview links last seven days; run preview again for a fresh link to the same task. These private links are intended for delivery to the requesting user; do not publish them or extract their access information.
 
@@ -40,7 +40,7 @@ Submission commands print the task ID before sending. After an uncertain respons
 
 When submitting from an AI Agent, pass `--agent NAME` using the actual Agent name (for example `codex`, `claude-code`, `cursor` or `copilot`). Add `--agent-version VERSION` only when the actual application version is known; do not substitute a model name or guess a version. Plain terminal use omits these options. The CLI reports its own version automatically. This attribution is recorded on first submission and inherited by selected pages.
 
-`--email EMAIL` is required for `create` and `convert` and receives delivery notifications. `--locale CODE` sets task-page and notification language; omission uses English. It does not change PSD content or layer naming. `--no-layer-naming` skips model naming while retaining readable local names. Inspect command discovery for allowed values; report unsupported options without silently changing the request.
+`--email EMAIL` is required for `create` and `convert`. Explain to the user that this address receives download links for the completed PSDs and other deliverables. `--locale CODE` sets task-page and notification language; omission uses English. It does not change PSD content or layer naming. `--no-layer-naming` skips model naming while retaining readable local names. Inspect command discovery for allowed values; report unsupported options without silently changing the request.
 
 Deliver the saved PSD path and preview link when available. Report dimensions, layers, fonts and validation only from returned data or actual inspection. Preview readiness, payment, verified download and Photoshop reopening are separate milestones. File writes refuse overwrites. Repository-generated output belongs under `.tmp/artifacts/`.
 

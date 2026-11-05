@@ -12,7 +12,7 @@ Do not select it for editing an existing PSD, arbitrary image/PDF conversion, of
 
 The Rust CLI is published on npm. Install it with `npm install -g @canvatopsd/cli` or `npx --yes @canvatopsd/cli --help`. Node.js 22.16+ launches a bundled Rust binary. End users need no Rust compiler. Native binaries can also run directly.
 
-The CLI uses the hosted service at `https://canvatopsd.com/api` by default. Normal hosted operations need no account or API key. New submissions require `--email EMAIL` for delivery notifications. Task credentials are stored locally and must not appear in chat or logs.
+The CLI uses the hosted service at `https://canvatopsd.com/api` by default. Normal hosted operations need no account or API key. New submissions require `--email EMAIL` to receive download links for completed PSDs and other deliverables. Task credentials are stored locally and must not appear in chat or logs.
 
 Optional `--locale CODE` on `convert` or `create` sets the task page and notification language on APIs supporting that field. Omit it to use the API default, English. It does not change PSD content or layer naming; see [the usage guide](usage.md).
 

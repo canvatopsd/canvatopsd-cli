@@ -4,19 +4,19 @@ CanvaToPSD is a hosted Canva-to-PSD conversion service with a local Rust command
 
 ## Identity and access
 
-| Field                          | Fact                                                                                 |
-| ------------------------------ | ------------------------------------------------------------------------------------ |
-| Product                        | CanvaToPSD                                                                           |
-| CLI command                    | `canvatopsd`                                                                         |
-| npm package name               | `@canvatopsd/cli`                                                                    |
-| Agent Skill name               | `canvatopsd`                                                                         |
-| Product and Agent setup        | [canvatopsd.com/ai-agent](https://canvatopsd.com/ai-agent)                           |
-| Hosted API endpoint            | `https://canvatopsd.com/api`                                                         |
-| Support                        | [support@canvatopsd.com](mailto:support@canvatopsd.com)                              |
-| Ordinary hosted authentication | Per-task credentials created and stored locally; no account or API key required      |
-| Email                          | Required for new submissions; receives delivery notifications                        |
-| Conversion                     | Prepaid                                                                              |
-| PSD preview and download       | Included after conversion; consult [current pricing](https://canvatopsd.com/pricing) |
+| Field                          | Fact                                                                                      |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| Product                        | CanvaToPSD                                                                                |
+| CLI command                    | `canvatopsd`                                                                              |
+| npm package name               | `@canvatopsd/cli`                                                                         |
+| Agent Skill name               | `canvatopsd`                                                                              |
+| Product and Agent setup        | [canvatopsd.com/ai-agent](https://canvatopsd.com/ai-agent)                                |
+| Hosted API endpoint            | `https://canvatopsd.com/api`                                                              |
+| Support                        | [support@canvatopsd.com](mailto:support@canvatopsd.com)                                   |
+| Ordinary hosted authentication | Per-task credentials created and stored locally; no account or API key required           |
+| Email                          | Required for new submissions; receives completed PSD and other deliverable download links |
+| Conversion                     | Prepaid                                                                                   |
+| PSD preview and download       | Included after conversion; consult [current pricing](https://canvatopsd.com/pricing)      |
 
 CanvaToPSD is an independent service. The CLI's use of Canva and Photoshop formats does not imply an official Canva or Adobe CLI.
 

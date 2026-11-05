@@ -22,7 +22,9 @@ pub fn submission(input: &Submission) -> Result<Value> {
         body["client"]["agentVersion"] = json!(client_label(version, 64)?);
     }
     if !email_address::EmailAddress::is_valid(&input.email) {
-        return Err(invalid("Invalid delivery email address"));
+        return Err(invalid(
+            "Provide a valid --email address to receive download links for completed PSDs and other deliverables",
+        ));
     }
     body["email"] = json!(input.email.to_lowercase());
     if let Some(locale) = &input.locale {

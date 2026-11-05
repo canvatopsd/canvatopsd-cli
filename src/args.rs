@@ -165,7 +165,7 @@ pub enum Command {
 pub struct Submission {
     /// Canva Share → Public view link, or copied canva.link share URL
     pub url: String,
-    /// Required email address for delivery notifications
+    /// Required email to receive download links for completed PSDs and other deliverables
     #[arg(long)]
     pub email: String,
     /// Task page and notification language; omission uses the API default

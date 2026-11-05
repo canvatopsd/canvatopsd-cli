@@ -39,7 +39,7 @@ canvatopsd download TASK --out ./design.psd
 
 Share the returned `previewUrl` unchanged to open the Web preview. For a whole-page image, use `preview TASK --out ./preview.webp`. Web owns interactive layer previews.
 
-Keep the same task ID throughout. Conversion requires upfront payment at the [current price](https://canvatopsd.com/pricing). An email address is required for new conversions and delivery notifications.
+Keep the same task ID throughout. Conversion requires upfront payment at the [current price](https://canvatopsd.com/pricing). A delivery email address is required for every new conversion. It receives download links for the completed PSDs and other deliverables.
 
 Optional `--locale CODE` on `convert` or `create` sets the task page and notification language on APIs supporting that field. Omit it to use the API default, English. It does not change PSD content or layer naming; see [the usage guide](doc/usage.md).
 

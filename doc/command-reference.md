@@ -1,6 +1,6 @@
 # CanvaToPSD CLI command reference
 
-Generated from Rust CLI 3.4.10 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
+Generated from Rust CLI 3.4.11 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
 
 Use this page to inspect every command without installing or executing the CLI. For capabilities, installation availability and pricing boundaries, read [product facts](product-facts.md). For task recovery and credential handling, read [Agent guidance](agent-discovery.md).
 
@@ -32,7 +32,7 @@ canvatopsd convert <url> --email <EMAIL> [OPTIONS]
 
 | Option                            | Required | Default | Description / allowed values                                                                                                                                                                                                 |
 | --------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--email <EMAIL>`                 | yes      | —       | Required email address for delivery notifications                                                                                                                                                                            |
+| `--email <EMAIL>`                 | yes      | —       | Required email to receive download links for completed PSDs and other deliverables                                                                                                                                           |
 | `--locale <LOCALE>`               | no       | —       | Task page and notification language; omission uses the API default Allowed: id, de, en, es, fr, it, pt-br, ru, ko, ja, zh, zh-tw, pl, hu, th, da, el, uk, ms, vi, sv, tr, cs, ro, lv, fi, bg, sr, sl, lt, et, nl, no, hr, sk |
 | `--agent <AGENT>`                 | no       | —       | AI Agent submitting this task, e.g. codex, claude-code or cursor                                                                                                                                                             |
 | `--agent-version <AGENT_VERSION>` | no       | —       | Actual Agent application version, when known                                                                                                                                                                                 |
@@ -60,7 +60,7 @@ canvatopsd create <url> --email <EMAIL> [OPTIONS]
 
 | Option                            | Required | Default | Description / allowed values                                                                                                                                                                                                 |
 | --------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--email <EMAIL>`                 | yes      | —       | Required email address for delivery notifications                                                                                                                                                                            |
+| `--email <EMAIL>`                 | yes      | —       | Required email to receive download links for completed PSDs and other deliverables                                                                                                                                           |
 | `--locale <LOCALE>`               | no       | —       | Task page and notification language; omission uses the API default Allowed: id, de, en, es, fr, it, pt-br, ru, ko, ja, zh, zh-tw, pl, hu, th, da, el, uk, ms, vi, sv, tr, cs, ro, lv, fi, bg, sr, sl, lt, et, nl, no, hr, sk |
 | `--agent <AGENT>`                 | no       | —       | AI Agent submitting this task, e.g. codex, claude-code or cursor                                                                                                                                                             |
 | `--agent-version <AGENT_VERSION>` | no       | —       | Actual Agent application version, when known                                                                                                                                                                                 |

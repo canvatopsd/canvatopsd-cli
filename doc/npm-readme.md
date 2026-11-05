@@ -102,7 +102,7 @@ See actual results: [Fashion studio social post](https://canvatopsd.com/showcase
 
 ## Pricing and task access
 
-Conversion is prepaid; completed-file previews and downloads need no additional payment. See [current pricing](https://canvatopsd.com/pricing). No subscription is required. An email address is required for new conversions and delivery notifications.
+Conversion is prepaid; completed-file previews and downloads need no additional payment. See [current pricing](https://canvatopsd.com/pricing). No subscription is required. A delivery email address is required for every new conversion. It receives download links for the completed PSDs and other deliverables.
 
 The CLI stores task access credentials locally in `~/.config/canvatopsd/config.json`. Keep this file and credential exports private. Use `canvatopsd auth export --help` to back up access before moving to another machine.
 
