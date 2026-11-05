@@ -1,6 +1,6 @@
 # CanvaToPSD CLI and Agent Skill
 
-> Convert Canva public view links to layered Photoshop PSD files with supported editable text. CLI package: @canvatopsd/cli. Command: canvatopsd. Hosted conversion; free previews and paid PSD downloads.
+> Convert Canva public view links to layered Photoshop PSD files with supported editable text. CLI package: @canvatopsd/cli. Command: canvatopsd. Hosted conversion with payment before processing; completed-file previews and downloads are included.
 
 The Rust CLI npm launcher requires Node.js 22.16+ and shell access. Supports static single-page and multi-page designs. Vector artwork becomes raster image layers; vector paths remain non-editable. Fonts and effects may differ. Video, animation, arbitrary image/PDF conversion and editing existing PSDs are outside this CLI's scope.
 
@@ -24,4 +24,4 @@ The Rust CLI npm launcher requires Node.js 22.16+ and shell access. Supports sta
 
 The website download and Agent page consume a pinned, immutable CLI release through the separate Web deployment. Check /agent/release.json for the website version. The Rust CLI is published as @canvatopsd/cli. Install it with npm install -g @canvatopsd/cli or run npx --yes @canvatopsd/cli --help. Releases require native CI acceptance for macOS ARM64, Linux ARM64/x64 and Windows ARM64/x64.
 
-The normal workflow is convert URL, preview TASK, checkout TASK, then download TASK after payment. Use the same returned taskId. Discover exact flags with canvatopsd discover. Discovery is offline JSON, business results are JSON, and errors use a nonzero exit code. Payment remains a user action. Do not treat preview readiness as a paid download or a verified Photoshop document.
+New submissions require a delivery email to receive completed PSD and other deliverable download links. Layer naming is always enabled. The normal workflow is convert URL --email EMAIL, checkout TASK, user payment, wait TASK, preview TASK, then download TASK. Use the same returned taskId. Discover exact flags with canvatopsd discover. Discovery is offline JSON, business results are JSON, and errors use a nonzero exit code. Payment remains a user action. Do not treat preview readiness as a paid download or a verified Photoshop document.
