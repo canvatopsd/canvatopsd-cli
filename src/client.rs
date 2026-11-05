@@ -8,7 +8,7 @@ use reqwest::{
     blocking::{Client as Http, Response},
     header,
 };
-use serde_json::{Value, json};
+use serde_json::Value;
 use std::time::{Duration, Instant};
 
 pub struct Client {
@@ -86,8 +86,9 @@ impl Client {
             return Err(error.into());
         }
         let mut cookies = config::Entries::new();
-        let pattern =
-            regex::Regex::new(r"^(__Host-canvatopsd-task(?:-[a-f0-9-]+)?)=([a-f0-9]{64})(?:;|$)")?;
+        let pattern = regex::Regex::new(
+            r"^(__Host-canvatopsd-task-[A-Za-z0-9_-]{22})=([a-f0-9]{64})(?:;|$)",
+        )?;
         for header in response.headers().get_all(header::SET_COOKIE) {
             if let Some(c) = pattern.captures(header.to_str()?) {
                 cookies.insert(c[1].into(), c[2].into());
@@ -126,55 +127,6 @@ impl Client {
             .into());
         }
         let result: Value = response.json().map_err(network_error)?;
-        let children: Vec<String> = match path {
-            "/task/page-request/create" => result
-                .get("tasks")
-                .and_then(Value::as_array)
-                .map(|items| {
-                    items
-                        .iter()
-                        .filter_map(|v| v["taskId"].as_str().map(str::to_owned))
-                        .collect()
-                })
-                .unwrap_or_default(),
-            "/task/source-page/list" => result
-                .get("autoTaskId")
-                .and_then(Value::as_str)
-                .map(|id| vec![id.into()])
-                .unwrap_or_default(),
-            "/task/status" => result
-                .get("pageTasks")
-                .and_then(Value::as_array)
-                .map(|items| {
-                    items
-                        .iter()
-                        .filter_map(|v| v["taskId"].as_str().map(str::to_owned))
-                        .collect()
-                })
-                .unwrap_or_default(),
-            _ => vec![],
-        };
-        if !children.is_empty() {
-            let parent = validation::uuid(validation::field(body, "taskId")?)?;
-            let mut links = config::Entries::new();
-            for child in children {
-                validation::uuid(&child)?;
-                if self.config.parents.get(&child) != Some(&parent) {
-                    links.insert(child, parent.clone());
-                }
-            }
-            if !links.is_empty() {
-                config::update(|settings| {
-                    settings
-                        .task_parents
-                        .entry(self.config.base_url.clone())
-                        .or_default()
-                        .extend(links.clone());
-                    Ok(())
-                })?;
-                self.config.parents.extend(links);
-            }
-        }
         Ok(result)
     }
     pub fn download(&self, url: &str) -> Result<Response> {
@@ -211,18 +163,4 @@ fn is_json(response: &Response) -> bool {
         .get(header::CONTENT_TYPE)
         .and_then(|v| v.to_str().ok())
         .is_some_and(|v| v.contains("application/json"))
-}
-pub fn submit(
-    client: &mut Client,
-    path: &str,
-    input: &Value,
-    deadline: Option<Instant>,
-) -> Result<Value> {
-    let key = validation::field(input, "submitKey")?;
-    eprintln!("{}", json!({"submitKey":key}));
-    let mut result = client
-        .json_with(path, input, false, deadline)
-        .map_err(|e| crate::error::submission_error(e, key, None))?;
-    result["submitKey"] = json!(key);
-    Ok(result)
 }

@@ -1,6 +1,6 @@
 # CanvaToPSD CLI command reference
 
-Generated from Rust CLI 3.2.2 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
+Generated from Rust CLI 3.4.10 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
 
 Use this page to inspect every command without installing or executing the CLI. For capabilities, installation availability and pricing boundaries, read [product facts](product-facts.md). For task recovery and credential handling, read [Agent guidance](agent-discovery.md).
 
@@ -10,7 +10,7 @@ Business commands return JSON on stdout; help and version are text. Diagnostics 
 
 | Option                  | Description                                      | Default |
 | ----------------------- | ------------------------------------------------ | ------- |
-| `--base-url <BASE_URL>` | Web endpoint ending /api, or direct API origin   | —       |
+| `--base-url <BASE_URL>` | Web endpoint ending /api                         | —       |
 | `--origin <ORIGIN>`     | Origin header matching the configured Web origin | —       |
 | `--timeout <TIMEOUT>`   | Per-request timeout in seconds                   | 30      |
 | `--help`                | Print help                                       | —       |
@@ -18,12 +18,12 @@ Business commands return JSON on stdout; help and version are text. Diagnostics 
 
 ## canvatopsd convert
 
-Convert a Canva link and wait for previews; retain one task ID for subsequent commands
+Submit a Canva link; payment is required before conversion starts. Omitted pages means page 1
 
 Network: required. Server action: conversion-submit.
 
 ```text
-canvatopsd convert <url> [OPTIONS]
+canvatopsd convert <url> --email <EMAIL> [OPTIONS]
 ```
 
 | Argument | Required | Description                                                    |
@@ -32,11 +32,11 @@ canvatopsd convert <url> [OPTIONS]
 
 | Option                            | Required | Default | Description / allowed values                                                                                                                                                                                                 |
 | --------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--email <EMAIL>`                 | no       | —       | Optional notification email                                                                                                                                                                                                  |
+| `--email <EMAIL>`                 | yes      | —       | Required email address for delivery notifications                                                                                                                                                                            |
 | `--locale <LOCALE>`               | no       | —       | Task page and notification language; omission uses the API default Allowed: id, de, en, es, fr, it, pt-br, ru, ko, ja, zh, zh-tw, pl, hu, th, da, el, uk, ms, vi, sv, tr, cs, ro, lv, fi, bg, sr, sl, lt, et, nl, no, hr, sk |
 | `--agent <AGENT>`                 | no       | —       | AI Agent submitting this task, e.g. codex, claude-code or cursor                                                                                                                                                             |
 | `--agent-version <AGENT_VERSION>` | no       | —       | Actual Agent application version, when known                                                                                                                                                                                 |
-| `--key <KEY>`                     | no       | —       | Reuse this UUID after an uncertain response                                                                                                                                                                                  |
+| `--task-id <TASK_ID>`             | no       | —       | Reuse this task ID after an uncertain response                                                                                                                                                                               |
 | `--no-layer-naming`               | no       | false   | Use local layer names without model naming                                                                                                                                                                                   |
 | `--dry-run`                       | no       | false   | Validate locally without submitting or saving credentials                                                                                                                                                                    |
 | `--pages <numbers>`               | no       | —       | Design page numbers, e.g. 1,3; required for multi-page designs                                                                                                                                                               |
@@ -51,7 +51,7 @@ Advanced or compatibility command; available through explicit invocation and dis
 Network: required. Server action: conversion-submit.
 
 ```text
-canvatopsd create <url> [OPTIONS]
+canvatopsd create <url> --email <EMAIL> [OPTIONS]
 ```
 
 | Argument | Required | Description                                                    |
@@ -60,11 +60,11 @@ canvatopsd create <url> [OPTIONS]
 
 | Option                            | Required | Default | Description / allowed values                                                                                                                                                                                                 |
 | --------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--email <EMAIL>`                 | no       | —       | Optional notification email                                                                                                                                                                                                  |
+| `--email <EMAIL>`                 | yes      | —       | Required email address for delivery notifications                                                                                                                                                                            |
 | `--locale <LOCALE>`               | no       | —       | Task page and notification language; omission uses the API default Allowed: id, de, en, es, fr, it, pt-br, ru, ko, ja, zh, zh-tw, pl, hu, th, da, el, uk, ms, vi, sv, tr, cs, ro, lv, fi, bg, sr, sl, lt, et, nl, no, hr, sk |
 | `--agent <AGENT>`                 | no       | —       | AI Agent submitting this task, e.g. codex, claude-code or cursor                                                                                                                                                             |
 | `--agent-version <AGENT_VERSION>` | no       | —       | Actual Agent application version, when known                                                                                                                                                                                 |
-| `--key <KEY>`                     | no       | —       | Reuse this UUID after an uncertain response                                                                                                                                                                                  |
+| `--task-id <TASK_ID>`             | no       | —       | Reuse this task ID after an uncertain response                                                                                                                                                                               |
 | `--no-layer-naming`               | no       | false   | Use local layer names without model naming                                                                                                                                                                                   |
 | `--dry-run`                       | no       | false   | Validate locally without submitting or saving credentials                                                                                                                                                                    |
 
@@ -78,23 +78,23 @@ Network: required. Server action: read.
 canvatopsd status <task> [OPTIONS]
 ```
 
-| Argument | Required | Description                                      |
-| -------- | -------- | ------------------------------------------------ |
-| `task`   | yes      | Existing task UUID returned by convert or create |
+| Argument | Required | Description                                    |
+| -------- | -------- | ---------------------------------------------- |
+| `task`   | yes      | Existing task ID returned by convert or create |
 
 ## canvatopsd wait
 
-Wait for all selected pages; stop at required input or deadline
+Wait for all selected pages; stop on errors or deadline
 
-Network: required. Server action: page-discovery-may-start-conversion.
+Network: required. Server action: read.
 
 ```text
 canvatopsd wait <task> [OPTIONS]
 ```
 
-| Argument | Required | Description                                      |
-| -------- | -------- | ------------------------------------------------ |
-| `task`   | yes      | Existing task UUID returned by convert or create |
+| Argument | Required | Description                                    |
+| -------- | -------- | ---------------------------------------------- |
+| `task`   | yes      | Existing task ID returned by convert or create |
 
 | Option                | Required | Default | Description / allowed values                                                               |
 | --------------------- | -------- | ------- | ------------------------------------------------------------------------------------------ |
@@ -102,41 +102,17 @@ canvatopsd wait <task> [OPTIONS]
 
 ## canvatopsd pages
 
-Discover source pages; a single-page design may start automatically
+Read source-page discovery from the task; does not start or refresh capture
 
-Network: required. Server action: page-discovery-may-start-conversion.
+Network: required. Server action: read.
 
 ```text
 canvatopsd pages <task> [OPTIONS]
 ```
 
-| Argument | Required | Description                                      |
-| -------- | -------- | ------------------------------------------------ |
-| `task`   | yes      | Existing task UUID returned by convert or create |
-
-| Option      | Required | Default | Description / allowed values        |
-| ----------- | -------- | ------- | ----------------------------------- |
-| `--refresh` | no       | false   | Request fresh source-page discovery |
-
-## canvatopsd select
-
-Select design pages to convert; keep the same task ID
-
-Network: required. Server action: conversion-submit.
-
-```text
-canvatopsd select <task> <pages> [OPTIONS]
-```
-
-| Argument | Required | Description                                            |
-| -------- | -------- | ------------------------------------------------------ |
-| `task`   | yes      | Existing task UUID returned by convert or create       |
-| `pages`  | yes      | Comma-separated positive design page numbers, e.g. 1,3 |
-
-| Option        | Required | Default | Description / allowed values                             |
-| ------------- | -------- | ------- | -------------------------------------------------------- |
-| `--key <KEY>` | no       | —       | Reuse the submission UUID after an uncertain response    |
-| `--dry-run`   | no       | false   | Inspect the command input without submitting this action |
+| Argument | Required | Description                                    |
+| -------- | -------- | ---------------------------------------------- |
+| `task`   | yes      | Existing task ID returned by convert or create |
 
 ## canvatopsd preview
 
@@ -148,34 +124,34 @@ Network: required. Server action: read.
 canvatopsd preview <task> [OPTIONS]
 ```
 
-| Argument | Required | Description                                                              |
-| -------- | -------- | ------------------------------------------------------------------------ |
-| `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
+| Argument | Required | Description                                                            |
+| -------- | -------- | ---------------------------------------------------------------------- |
+| `task`   | yes      | Original task ID returned by convert; reuse it for every selected page |
 
-| Option          | Required | Default | Description / allowed values                                                                                        |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
-| `--out <OUT>`   | no       | —       | Write to a new output file; existing files are never overwritten                                                    |
+| Option          | Required | Default | Description / allowed values                                                                                                         |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `--page <PAGE>` | no       | —       | Design page number; required for multi-page file commands; payment covers all selected pages Integer; minimum 1; maximum 4294967295. |
+| `--out <OUT>`   | no       | —       | Write to a new output file; existing files are never overwritten                                                                     |
 
 ## canvatopsd download
 
-Synchronize payment and download a PSD or fonts; verify size and SHA-256
+Download a paid PSD or fonts; verify size and SHA-256
 
-Network: required. Server action: payment-sync.
+Network: required. Server action: read.
 
 ```text
 canvatopsd download <task> --out <OUT> [OPTIONS]
 ```
 
-| Argument | Required | Description                                                              |
-| -------- | -------- | ------------------------------------------------------------------------ |
-| `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
+| Argument | Required | Description                                                            |
+| -------- | -------- | ---------------------------------------------------------------------- |
+| `task`   | yes      | Original task ID returned by convert; reuse it for every selected page |
 
-| Option              | Required | Default | Description / allowed values                                                                                        |
-| ------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>`     | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
-| `--out <OUT>`       | yes      | —       | Write to a new output file; existing files are never overwritten                                                    |
-| `--format <FORMAT>` | no       | psd     | Download the PSD, font archive or font list Allowed: psd, fonts, font-list                                          |
+| Option              | Required | Default | Description / allowed values                                                                                                         |
+| ------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `--page <PAGE>`     | no       | —       | Design page number; required for multi-page file commands; payment covers all selected pages Integer; minimum 1; maximum 4294967295. |
+| `--out <OUT>`       | yes      | —       | Write to a new output file; existing files are never overwritten                                                                     |
+| `--format <FORMAT>` | no       | psd     | Download the PSD, font archive or font list Allowed: psd, fonts, font-list                                                           |
 
 ## canvatopsd files
 
@@ -189,38 +165,38 @@ Network: required. Server action: read.
 canvatopsd files <task> [OPTIONS]
 ```
 
-| Argument | Required | Description                                                              |
-| -------- | -------- | ------------------------------------------------------------------------ |
-| `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
+| Argument | Required | Description                                                            |
+| -------- | -------- | ---------------------------------------------------------------------- |
+| `task`   | yes      | Original task ID returned by convert; reuse it for every selected page |
 
-| Option          | Required | Default | Description / allowed values                                                                                        |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
+| Option          | Required | Default | Description / allowed values                                                                                                         |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `--page <PAGE>` | no       | —       | Design page number; required for multi-page file commands; payment covers all selected pages Integer; minimum 1; maximum 4294967295. |
 
 ## canvatopsd checkout
 
 Create a hosted payment link; share checkoutUrl unchanged with the user
 
-Network: required. Server action: checkout-create.
+Network: required. Server action: private-link-create.
 
 ```text
 canvatopsd checkout <task> [OPTIONS]
 ```
 
-| Argument | Required | Description                                                              |
-| -------- | -------- | ------------------------------------------------------------------------ |
-| `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
+| Argument | Required | Description                                                            |
+| -------- | -------- | ---------------------------------------------------------------------- |
+| `task`   | yes      | Original task ID returned by convert; reuse it for every selected page |
 
-| Option          | Required | Default | Description / allowed values                                                                                        |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
-| `--dry-run`     | no       | false   | Inspect the command input without submitting this action                                                            |
+| Option          | Required | Default | Description / allowed values                                                                                                         |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `--page <PAGE>` | no       | —       | Design page number; required for multi-page file commands; payment covers all selected pages Integer; minimum 1; maximum 4294967295. |
+| `--dry-run`     | no       | false   | Inspect the command input without submitting this action                                                                             |
 
 ## canvatopsd payment
 
 Read payment status or confirm an authorized payment
 
-Network: required. Server action: payment-sync.
+Network: required. Server action: read.
 
 ```text
 canvatopsd payment [task] [COMMAND] [OPTIONS]
@@ -236,21 +212,21 @@ canvatopsd payment [task] [COMMAND] [OPTIONS]
 
 ## canvatopsd payment status
 
-Read and synchronize payment state
+Read payment state without capturing funds
 
-Network: required. Server action: payment-sync.
+Network: required. Server action: read.
 
 ```text
 canvatopsd payment status <task> [OPTIONS]
 ```
 
-| Argument | Required | Description                                                              |
-| -------- | -------- | ------------------------------------------------------------------------ |
-| `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
+| Argument | Required | Description                                                            |
+| -------- | -------- | ---------------------------------------------------------------------- |
+| `task`   | yes      | Original task ID returned by convert; reuse it for every selected page |
 
-| Option          | Required | Default | Description / allowed values                                                                                        |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
+| Option          | Required | Default | Description / allowed values                                                                                                         |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `--page <PAGE>` | no       | —       | Design page number; required for multi-page file commands; payment covers all selected pages Integer; minimum 1; maximum 4294967295. |
 
 ## canvatopsd payment confirm
 
@@ -262,13 +238,13 @@ Network: required. Server action: payment-capture. May capture approved funds; r
 canvatopsd payment confirm <task> [OPTIONS]
 ```
 
-| Argument | Required | Description                                                              |
-| -------- | -------- | ------------------------------------------------------------------------ |
-| `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
+| Argument | Required | Description                                                            |
+| -------- | -------- | ---------------------------------------------------------------------- |
+| `task`   | yes      | Original task ID returned by convert; reuse it for every selected page |
 
-| Option          | Required | Default | Description / allowed values                                                                                        |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
+| Option          | Required | Default | Description / allowed values                                                                                                         |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `--page <PAGE>` | no       | —       | Design page number; required for multi-page file commands; payment covers all selected pages Integer; minimum 1; maximum 4294967295. |
 
 ## canvatopsd confirm
 
@@ -282,13 +258,13 @@ Network: required. Server action: payment-capture. May capture approved funds; r
 canvatopsd confirm <task> [OPTIONS]
 ```
 
-| Argument | Required | Description                                                              |
-| -------- | -------- | ------------------------------------------------------------------------ |
-| `task`   | yes      | Original task UUID returned by convert; reuse it for every selected page |
+| Argument | Required | Description                                                            |
+| -------- | -------- | ---------------------------------------------------------------------- |
+| `task`   | yes      | Original task ID returned by convert; reuse it for every selected page |
 
-| Option          | Required | Default | Description / allowed values                                                                                        |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
-| `--page <PAGE>` | no       | —       | Design page number; file and payment commands require it for multiple pages Integer; minimum 1; maximum 4294967295. |
+| Option          | Required | Default | Description / allowed values                                                                                                         |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `--page <PAGE>` | no       | —       | Design page number; required for multi-page file commands; payment covers all selected pages Integer; minimum 1; maximum 4294967295. |
 
 ## canvatopsd doctor
 
@@ -352,9 +328,13 @@ Network: offline. Server action: none.
 canvatopsd init [url] [OPTIONS]
 ```
 
-| Argument | Required | Description                                                |
-| -------- | -------- | ---------------------------------------------------------- |
-| `url`    | no       | HTTPS service endpoint, or loopback HTTP; defaults to prod |
+| Argument | Required | Description                                                                      |
+| -------- | -------- | -------------------------------------------------------------------------------- |
+| `url`    | no       | HTTPS service endpoint, or loopback HTTP; defaults to the saved endpoint or prod |
+
+| Option       | Required | Default | Description / allowed values                                              |
+| ------------ | -------- | ------- | ------------------------------------------------------------------------- |
+| `--internal` | no       | false   | Mark submissions from this CLI installation as internal operator activity |
 
 ## canvatopsd auth
 
@@ -390,10 +370,10 @@ Network: offline. Server action: none.
 canvatopsd auth export <task> <file> [OPTIONS]
 ```
 
-| Argument | Required | Description                                                             |
-| -------- | -------- | ----------------------------------------------------------------------- |
-| `task`   | yes      | Task UUID with a direct local credential; export its parent when needed |
-| `file`   | yes      | New secret credential backup file                                       |
+| Argument | Required | Description                                                   |
+| -------- | -------- | ------------------------------------------------------------- |
+| `task`   | yes      | Task ID with a direct local credential; export it when needed |
+| `file`   | yes      | New secret credential backup file                             |
 
 ## canvatopsd auth status
 
@@ -471,46 +451,6 @@ canvatopsd skill install [agent] [OPTIONS]
 | ------------- | -------- | ------- | ------------------------------------------------------------------- |
 | `--dir <DIR>` | no       | —       | Custom skills parent directory, e.g. /project/.agents/skills        |
 | `--replace`   | no       | false   | Replace the entire installed Skill directory, including local edits |
-
-## canvatopsd operator
-
-Direct API operator reads; requires CANVATOPSD_OPERATOR_TOKEN
-
-Advanced or compatibility command; available through explicit invocation and discovery.
-
-Network: required. Server action: read.
-
-```text
-canvatopsd operator <COMMAND> [OPTIONS]
-```
-
-## canvatopsd operator task-list
-
-List tasks; server pagination is 100 tasks per page
-
-Network: required. Server action: read.
-
-```text
-canvatopsd operator task-list [OPTIONS]
-```
-
-| Option              | Required | Default | Description / allowed values                                                      |
-| ------------------- | -------- | ------- | --------------------------------------------------------------------------------- |
-| `--offset <OFFSET>` | no       | 0       | Server task-list offset; each page contains at most 100 tasks Integer; minimum 0. |
-
-## canvatopsd operator notification-status
-
-Read task notification records
-
-Network: required. Server action: read.
-
-```text
-canvatopsd operator notification-status <task> [OPTIONS]
-```
-
-| Argument | Required | Description                                               |
-| -------- | -------- | --------------------------------------------------------- |
-| `task`   | yes      | Existing task UUID to inspect with operator authorization |
 
 ## canvatopsd request
 

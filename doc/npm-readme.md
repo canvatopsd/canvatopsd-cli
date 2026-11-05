@@ -1,6 +1,6 @@
 # Canva to PSD CLI — CanvaToPSD
 
-Convert a **Canva public view link into a layered Photoshop PSD** from your terminal or AI agent. Preview the conversion for free, then pay for the pages you want to download.
+Convert a **Canva public view link into a layered Photoshop PSD** from your terminal or AI agent. Select your pages and pay before conversion starts, then preview and download your completed files.
 
 CanvaToPSD preserves supported editable text and separates images and artwork into layers. It supports static single-page and multi-page designs.
 
@@ -33,7 +33,7 @@ npx --yes @canvatopsd/cli --help
 Create a public view link for your design, then run:
 
 ```sh
-canvatopsd convert 'CANVA_PUBLIC_VIEW_URL'
+canvatopsd convert 'CANVA_PUBLIC_VIEW_URL' --email 'you@example.com'
 ```
 
 Use the returned `taskId` as `TASK` in all following commands:
@@ -48,9 +48,11 @@ canvatopsd download TASK --out ./design.psd
 For a multi-page design, choose its page numbers explicitly:
 
 ```sh
-canvatopsd convert 'CANVA_PUBLIC_VIEW_URL' --pages 1,3
+canvatopsd convert 'CANVA_PUBLIC_VIEW_URL' --email 'you@example.com' --pages 1,3
+canvatopsd checkout TASK
+# After payment:
+canvatopsd wait TASK
 canvatopsd preview TASK --page 3
-canvatopsd checkout TASK --page 3
 canvatopsd download TASK --page 3 --out ./page3.psd
 ```
 
@@ -71,7 +73,7 @@ Use `claude-code`, `cursor`, `copilot` or `agents` instead of `codex`, or specif
 
 Example request:
 
-> Use the canvatopsd Skill to convert this Canva public view link. Show me the preview and checkout link, then download the PSD after I pay.
+> Use the canvatopsd Skill to convert this Canva public view link. Show me the checkout link first; after I pay, wait for conversion, show the preview and download the PSD.
 
 Agents can inspect commands without accessing the network or credentials:
 
@@ -100,7 +102,7 @@ See actual results: [Fashion studio social post](https://canvatopsd.com/showcase
 
 ## Pricing and task access
 
-Conversion and preview are free; PSD downloads are paid. See [current pricing](https://canvatopsd.com/pricing). No subscription is required. An email address is optional for notifications.
+Conversion is prepaid; completed-file previews and downloads need no additional payment. See [current pricing](https://canvatopsd.com/pricing). No subscription is required. An email address is required for new conversions and delivery notifications.
 
 The CLI stores task access credentials locally in `~/.config/canvatopsd/config.json`. Keep this file and credential exports private. Use `canvatopsd auth export --help` to back up access before moving to another machine.
 

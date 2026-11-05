@@ -16,7 +16,7 @@ fn ui_locales() -> clap::builder::PossibleValuesParser {
 }
 
 #[derive(Parser)]
-#[command(name = "canvatopsd", version = env!("CARGO_PKG_VERSION"), about = "Canva to PSD CLI for AI agents. Convert public Canva links to editable layered Photoshop files. Business results are JSON.", subcommand_help_heading = "Common commands", after_help = "Start: canvatopsd discover | canvatopsd skill show\nWorkflow: convert URL → preview TASK → checkout TASK → user payment → download TASK --out FILE\nMulti-page: convert URL --pages 1,3; then use --page 3. No --json flag is needed.\nUse COMMAND --help or discover for product commands; discover --advanced for maintenance.")]
+#[command(name = "canvatopsd", version = env!("CARGO_PKG_VERSION"), about = "Canva to PSD CLI for AI agents. Convert public Canva links to editable layered Photoshop files. Business results are JSON.", subcommand_help_heading = "Common commands", after_help = "Start: canvatopsd discover | canvatopsd skill show\nWorkflow: convert URL --email EMAIL → checkout TASK → user payment → wait TASK → preview TASK → download TASK --out FILE\nMulti-page: convert URL --email EMAIL --pages 1,3; then use --page 3. No --json flag is needed.\nUse COMMAND --help or discover for product commands; discover --advanced for maintenance.")]
 pub struct Cli {
     #[command(flatten)]
     pub options: Options,
@@ -25,7 +25,7 @@ pub struct Cli {
 }
 #[derive(Args, Default)]
 pub struct Options {
-    /// Web endpoint ending /api, or direct API origin
+    /// Web endpoint ending /api
     #[arg(long, global = true)]
     pub base_url: Option<String>,
     /// Origin header matching the configured Web origin
@@ -37,7 +37,7 @@ pub struct Options {
 }
 #[derive(Subcommand)]
 pub enum Command {
-    /// Convert a Canva link and wait for previews; retain one task ID for subsequent commands
+    /// Submit a Canva link; payment is required before conversion starts. Omitted pages means page 1
     Convert {
         #[command(flatten)]
         input: Submission,
@@ -53,37 +53,21 @@ pub enum Command {
     Create(Submission),
     /// Read conversion progress and selected page numbers
     Status {
-        /// Existing task UUID returned by convert or create
+        /// Existing task ID returned by convert or create
         task: String,
     },
-    /// Wait for all selected pages; stop at required input or deadline
+    /// Wait for all selected pages; stop on errors or deadline
     Wait {
-        /// Existing task UUID returned by convert or create
+        /// Existing task ID returned by convert or create
         task: String,
         /// Maximum wait in seconds; polls every 5 seconds without cancelling work
         #[arg(long, default_value_t = 300, value_parser = clap::value_parser!(u64).range(1..))]
         seconds: u64,
     },
-    /// Discover source pages; a single-page design may start automatically
+    /// Read source-page discovery from the task; does not start or refresh capture
     Pages {
-        /// Existing task UUID returned by convert or create
+        /// Existing task ID returned by convert or create
         task: String,
-        /// Request fresh source-page discovery
-        #[arg(long)]
-        refresh: bool,
-    },
-    /// Select design pages to convert; keep the same task ID
-    Select {
-        /// Existing task UUID returned by convert or create
-        task: String,
-        /// Comma-separated positive design page numbers, e.g. 1,3
-        pages: String,
-        /// Reuse the submission UUID after an uncertain response
-        #[arg(long)]
-        key: Option<String>,
-        /// Inspect the command input without submitting this action
-        #[arg(long)]
-        dry_run: bool,
     },
     /// Get a Web preview link, or save a whole-page image with --out
     Preview {
@@ -93,7 +77,7 @@ pub enum Command {
         #[arg(long)]
         out: Option<String>,
     },
-    /// Synchronize payment and download a PSD or fonts; verify size and SHA-256
+    /// Download a paid PSD or fonts; verify size and SHA-256
     Download {
         #[command(flatten)]
         selection: Selection,
@@ -136,8 +120,11 @@ pub enum Command {
     /// Save endpoint settings; defaults to prod
     #[command(hide = true)]
     Init {
-        /// HTTPS service endpoint, or loopback HTTP; defaults to prod
+        /// HTTPS service endpoint, or loopback HTTP; defaults to the saved endpoint or prod
         url: Option<String>,
+        /// Mark submissions from this CLI installation as internal operator activity
+        #[arg(long)]
+        internal: bool,
     },
     /// Import, export or inspect local task credentials
     Auth {
@@ -148,12 +135,6 @@ pub enum Command {
     Skill {
         #[command(subcommand)]
         command: Skill,
-    },
-    /// Direct API operator reads; requires CANVATOPSD_OPERATOR_TOKEN
-    #[command(hide = true)]
-    Operator {
-        #[command(subcommand)]
-        command: Operator,
     },
     /// Send an explicit POST command; side effects depend on the API action
     #[command(hide = true)]
@@ -184,9 +165,9 @@ pub enum Command {
 pub struct Submission {
     /// Canva Share → Public view link, or copied canva.link share URL
     pub url: String,
-    /// Optional notification email
+    /// Required email address for delivery notifications
     #[arg(long)]
-    pub email: Option<String>,
+    pub email: String,
     /// Task page and notification language; omission uses the API default
     #[arg(long, value_parser = ui_locales())]
     pub locale: Option<String>,
@@ -196,9 +177,9 @@ pub struct Submission {
     /// Actual Agent application version, when known
     #[arg(long, requires = "agent")]
     pub agent_version: Option<String>,
-    /// Reuse this UUID after an uncertain response
+    /// Reuse this task ID after an uncertain response
     #[arg(long)]
-    pub key: Option<String>,
+    pub task_id: Option<String>,
     /// Use local layer names without model naming
     #[arg(long)]
     pub no_layer_naming: bool,
@@ -218,9 +199,9 @@ pub enum Update {
 }
 #[derive(Args, Clone)]
 pub struct Selection {
-    /// Original task UUID returned by convert; reuse it for every selected page
+    /// Original task ID returned by convert; reuse it for every selected page
     pub task: String,
-    /// Design page number; file and payment commands require it for multiple pages
+    /// Design page number; required for multi-page file commands; payment covers all selected pages
     #[arg(long, value_parser = clap::value_parser!(u32).range(1..))]
     pub page: Option<u32>,
 }
@@ -233,7 +214,7 @@ pub enum Auth {
     },
     /// Write one secret task credential backup; does not overwrite files
     Export {
-        /// Task UUID with a direct local credential; export its parent when needed
+        /// Task ID with a direct local credential; export it when needed
         task: String,
         /// New secret credential backup file
         file: String,
@@ -267,21 +248,6 @@ pub struct SkillTarget {
     #[arg(long)]
     pub dir: Option<String>,
 }
-#[derive(Subcommand)]
-pub enum Operator {
-    /// List tasks; server pagination is 100 tasks per page
-    TaskList {
-        /// Server task-list offset; each page contains at most 100 tasks
-        #[arg(long, default_value_t = 0)]
-        offset: u64,
-    },
-    /// Read task notification records
-    NotificationStatus {
-        /// Existing task UUID to inspect with operator authorization
-        task: String,
-    },
-}
-
 #[derive(Args)]
 #[command(
     arg_required_else_help = true,
@@ -300,7 +266,7 @@ pub struct PaymentArgs {
 
 #[derive(Subcommand)]
 pub enum Payment {
-    /// Read and synchronize payment state
+    /// Read payment state without capturing funds
     Status(Selection),
     /// Confirm an authorized payment; may capture approved funds
     Confirm(Selection),

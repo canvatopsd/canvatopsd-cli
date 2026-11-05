@@ -4,13 +4,6 @@ use regex::Regex;
 use serde_json::{Value, json};
 use url::Url;
 
-pub fn uuid(value: &str) -> Result<String> {
-    let parsed = uuid::Uuid::parse_str(value).map_err(|_| invalid("Expected a UUID"))?;
-    if parsed.to_string() != value.to_lowercase() {
-        return Err(invalid("Expected a hyphenated UUID"));
-    }
-    Ok(value.into())
-}
 pub fn token(value: &str) -> Result<String> {
     if value.len() != 64
         || !value
@@ -82,14 +75,16 @@ pub fn canva_link(value: &str) -> Result<Value> {
     Ok(result)
 }
 pub fn task_link(url: &Url) -> Result<Option<String>> {
-    let expression = Regex::new(r"(?i)^/(?:[a-z]{2,3}(?:-[a-z0-9]{2,8})*/)?task/([a-f0-9-]+)$")?;
+    let expression = Regex::new(
+        r"^/(?:[a-z]{2,3}(?:-[a-z0-9]{2,8})*/)?task/([A-Za-z0-9_-]{22})(?:/(?:payment|result))?/?$",
+    )?;
     expression
         .captures(url.path())
-        .map(|c| uuid(&c[1]))
+        .map(|c| task_id(&c[1]))
         .transpose()
 }
 pub fn task_input(task: &str) -> Result<Value> {
-    Ok(json!({"taskId":uuid(task)?}))
+    Ok(json!({"taskId":task_id(task)?}))
 }
 pub fn field<'a>(value: &'a Value, key: &str) -> Result<&'a str> {
     value
@@ -122,4 +117,9 @@ pub fn page_number(value: &Value, key: &str) -> Result<u32> {
         .and_then(|n| u32::try_from(n).ok())
         .filter(|n| *n > 0)
         .ok_or_else(|| invalid(format!("Response is missing a positive page number: {key}")))
+}
+
+pub fn task_id(value: &str) -> Result<String> {
+    value.parse::<crate::task_id::TaskId>().map_err(invalid)?;
+    Ok(value.to_owned())
 }

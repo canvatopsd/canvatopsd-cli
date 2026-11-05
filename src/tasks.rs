@@ -1,6 +1,6 @@
 use crate::{
     args::Submission,
-    client::{Client, submit},
+    client::Client,
     error::{invalid, page_error, task_error},
     validation::{self, array, field},
 };
@@ -9,11 +9,11 @@ use serde_json::{Value, json};
 use std::time::{Duration, Instant};
 
 pub fn submission(input: &Submission) -> Result<Value> {
-    let key = input
-        .key
-        .clone()
-        .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
-    let mut body = json!({"submitKey":validation::uuid(&key)?,"canvaUrl":validation::canva_link(&input.url)?["url"],"layerNaming":!input.no_layer_naming});
+    validation::canva_link(&input.url)?;
+    let mut body = json!({"canvaUrl":input.url.trim(),"layerNaming":!input.no_layer_naming});
+    if let Some(key) = &input.task_id {
+        body["taskId"] = json!(validation::task_id(key)?);
+    }
     body["client"] = json!({"channel":"cli","version":env!("CARGO_PKG_VERSION")});
     if let Some(agent) = &input.agent {
         body["client"]["agent"] = json!(client_label(agent, 80)?);
@@ -21,15 +21,14 @@ pub fn submission(input: &Submission) -> Result<Value> {
     if let Some(version) = &input.agent_version {
         body["client"]["agentVersion"] = json!(client_label(version, 64)?);
     }
-    if let Some(email) = &input.email {
-        if !email_address::EmailAddress::is_valid(email) {
-            return Err(invalid("Invalid notification email"));
-        }
-        body["email"] = json!(email.to_lowercase());
+    if !email_address::EmailAddress::is_valid(&input.email) {
+        return Err(invalid("Invalid delivery email address"));
     }
+    body["email"] = json!(input.email.to_lowercase());
     if let Some(locale) = &input.locale {
         body["locale"] = json!(locale);
     }
+    body["pages"] = json!([1]);
     Ok(body)
 }
 fn client_label(value: &str, limit: usize) -> Result<&str> {
@@ -41,14 +40,8 @@ fn client_label(value: &str, limit: usize) -> Result<&str> {
     }
     Ok(value)
 }
-pub fn selection(task: &str, pages: &str, key: Option<&str>) -> Result<Value> {
-    Ok(
-        json!({"taskId":validation::uuid(task)?,"submitKey":validation::uuid(&key.map(str::to_owned).unwrap_or_else(|| uuid::Uuid::new_v4().to_string()))?,"pages":validation::pages(pages)?}),
-    )
-}
-pub fn source_pages(client: &mut Client, task: &str, refresh: bool) -> Result<Value> {
-    let mut input = validation::task_input(task)?;
-    input["refresh"] = json!(refresh);
+pub fn source_pages(client: &mut Client, task: &str) -> Result<Value> {
+    let input = validation::task_input(task)?;
     let source = client.json("/task/source-page/list", &input)?;
     let pages = match field(&source, "status")? {
         "ready" => array(&source, "pages")?.iter().map(|page| json!({"number":page["index"],"width":page["width"],"height":page["height"],"ready":page["ready"]})).collect(),
@@ -58,64 +51,65 @@ pub fn source_pages(client: &mut Client, task: &str, refresh: bool) -> Result<Va
     Ok(json!({"taskId":task,"status":source["status"],"message":source["message"],"pages":pages}))
 }
 pub fn read_status(client: &mut Client, task: &str, deadline: Option<Instant>) -> Result<Value> {
-    let mut status = client.json_with(
+    let status = client.json_with(
         "/task/status",
         &validation::task_input(task)?,
         false,
         deadline,
     )?;
-    if let Some(pages) = status.get_mut("pageTasks").and_then(Value::as_array_mut) {
-        for page in pages.iter_mut().filter(|page| requires_input(page)) {
-            let child = client.json_with(
-                "/task/status",
-                &validation::task_input(field(page, "taskId")?)?,
-                false,
-                deadline,
-            )?;
-            page["message"] = child["message"].clone();
-        }
-    }
     Ok(status)
 }
 pub fn conversion_pages(status: &Value) -> Result<Vec<Value>> {
-    let mut pages = array(status, "pageTasks")?
+    let pages = array(status, "pageTasks")?
         .iter()
         .filter(|v| v["status"] != "cancelled")
         .cloned()
         .collect::<Vec<_>>();
-    if status.get("selection").is_none_or(Value::is_null) {
-        let page = status
-            .get("sourcePage")
-            .and_then(Value::as_u64)
-            .unwrap_or(1);
-        pages.insert(0, json!({"taskId":field(status,"taskId")?,"pageStart":page,"pageEnd":page,"status":field(status,"status")?,"inputRequired":status["inputRequired"],"message":status["message"],"paymentState":status["quote"]["payment_state"]}));
-    }
     Ok(pages)
+}
+fn needs_attention(status: &Value) -> bool {
+    status["status"] == "manual_required"
 }
 fn cancelled(status: &Value) -> bool {
     matches!(status["status"].as_str(), Some("cancelled" | "cancelling"))
 }
-fn requires_input(status: &Value) -> bool {
-    status["inputRequired"] == true || status["inputRequired"] == 1
-}
 pub fn summary(status: &Value) -> Result<Value> {
     let pages = conversion_pages(status)?;
-    let ready =
-        !pages.is_empty() && pages.iter().all(|v| v["status"] == "ready") && !cancelled(status);
-    let state = if ready {
+    let ready = !pages.is_empty()
+        && pages.iter().all(|v| v["status"] == "ready")
+        && !cancelled(status)
+        && !needs_attention(status);
+    let state = if cancelled(status) || needs_attention(status) {
+        field(status, "status")?
+    } else if ready {
         "ready"
     } else if pages.iter().any(|v| v["status"] == "processing") {
         "processing"
     } else {
         field(status, "status")?
     };
-    Ok(
-        json!({"taskId":field(status,"taskId")?,"status":state,"inputRequired":requires_input(status) || pages.iter().any(requires_input),"message":if ready { json!("Selected pages are ready for preview") } else { status["message"].clone() },"pageSelectionRequired":status.get("selection").is_some_and(|v| !v.is_null() && v["confirmed"] != true),"pages":pages.iter().map(|v| json!({"number":v["pageStart"],"status":v["status"],"paymentState":v["paymentState"],"inputRequired":requires_input(v),"message":v["message"]})).collect::<Vec<_>>()}),
-    )
-}
-pub struct TaskQuote {
-    pub input: Value,
-    pub page: u32,
+    let message = if ready {
+        json!("Selected pages are ready for preview")
+    } else {
+        status["message"].clone()
+    };
+    let pages = pages
+        .iter()
+        .map(|page| {
+            json!({
+                "number": page["pageStart"],
+                "status": page["status"],
+                "paymentState": page["paymentState"],
+            })
+        })
+        .collect::<Vec<_>>();
+    Ok(json!({
+        "taskId": field(status, "taskId")?,
+        "status": state,
+        "message": message,
+        "progress": status["progress"],
+        "pages": pages,
+    }))
 }
 
 pub fn public_result(mut value: Value, task: &str, page: u32) -> Result<Value> {
@@ -127,59 +121,48 @@ pub fn public_result(mut value: Value, task: &str, page: u32) -> Result<Value> {
     Ok(value)
 }
 
-pub fn quote(
+pub fn result_page(
     client: &mut Client,
     task: &str,
     page: Option<u32>,
     command: &str,
-) -> Result<TaskQuote> {
-    let mut status = read_status(client, task, None)?;
-    if cancelled(&status) {
-        return Err(task_error(
-            "task_requires_attention",
-            "Task is cancelled or cancelling; inspect status",
-            task,
-        ));
-    }
-    let pages = conversion_pages(&status)?;
-    let candidates = pages
+) -> Result<(Value, u32)> {
+    let result = client.json("/task/result/read", &validation::task_input(task)?)?;
+    let pages = array(&result, "pages")?;
+    let available = pages
         .iter()
-        .filter(|v| page.is_none_or(|p| v["pageStart"] == p && v["pageEnd"] == p))
+        .map(|value| validation::page_number(value, "page"))
+        .collect::<Result<Vec<_>>>()?;
+    let matches = available
+        .iter()
+        .filter(|&&number| page.is_none_or(|p| p == number))
+        .copied()
         .collect::<Vec<_>>();
-    if candidates.len() != 1 {
-        let available = pages
-            .iter()
-            .map(|v| validation::page_number(v, "pageStart"))
-            .collect::<Result<Vec<_>>>()?;
+    let [number] = matches.as_slice() else {
         return Err(page_error(
             if page.is_none() {
                 "page_required"
             } else {
                 "page_not_found"
             },
-            "Choose a design page from availablePages and repeat the command with --page N",
+            "Choose a design page and repeat the command with --page N",
             task,
             available,
             json!({"command":command,"taskId":task,"requiredOption":"--page"}),
         ));
-    }
-    let number = validation::page_number(candidates[0], "pageStart")?;
-    let id = field(candidates[0], "taskId")?.to_owned();
-    if id != task {
-        status = read_status(client, &id, None)?;
-    }
-    if status["quote"].is_null() {
+    };
+    let selected = pages
+        .iter()
+        .find(|value| value["page"] == *number)
+        .ok_or_else(|| invalid("Page is missing from result"))?;
+    if selected["status"] != "ready" {
         return Err(task_error(
             "conversion_not_ready",
             format!("Preview is not ready; run canvatopsd wait {task}"),
             task,
         ));
     }
-    let quote = validation::uuid(field(&status["quote"], "quote_id")?)?;
-    Ok(TaskQuote {
-        input: json!({"taskId":validation::uuid(field(&status,"taskId")?)?,"quoteId":quote}),
-        page: number,
-    })
+    Ok((result, *number))
 }
 pub fn wait(
     client: &mut Client,
@@ -187,7 +170,7 @@ pub fn wait(
     seconds: u64,
     requested: Option<&[u32]>,
 ) -> Result<Value> {
-    validation::uuid(task)?;
+    validation::task_id(task)?;
     let deadline = Instant::now()
         .checked_add(Duration::from_secs(seconds))
         .ok_or_else(|| invalid("Wait duration is too large"))?;
@@ -209,7 +192,16 @@ fn wait_until(
 ) -> Result<Value> {
     loop {
         let status = read_status(client, task, Some(deadline))?;
-        if requires_input(&status) || cancelled(&status) {
+        if status["submissionStatus"] == "received" {
+            wait_for_next_read(deadline, task)?;
+            continue;
+        }
+        if status["status"] == "awaiting_payment" {
+            return Ok(
+                json!({"taskId":task,"status":"awaiting_payment","message":"Payment is required before conversion starts. Run checkout and share checkoutUrl with the user.","nextCommand":format!("canvatopsd checkout {task}")}),
+            );
+        }
+        if needs_attention(&status) || cancelled(&status) {
             return Err(task_error(
                 "task_requires_attention",
                 "Task requires attention; inspect status",
@@ -220,61 +212,13 @@ fn wait_until(
             .get("selection")
             .is_some_and(|v| !v.is_null() && v["confirmed"] != true)
         {
-            let source = client.json_with(
-                "/task/source-page/list",
-                &json!({"taskId":task,"refresh":false}),
-                false,
-                Some(deadline),
-            )?;
-            match field(&source, "status")? {
-                "failed" => {
-                    return Err(task_error(
-                        "page_discovery_failed",
-                        field(&source, "message")?,
-                        task,
-                    ));
-                }
-                "ready" => {
-                    let pages = array(&source, "pages")?;
-                    let available = pages
-                        .iter()
-                        .map(|v| validation::page_number(v, "index"))
-                        .collect::<Result<Vec<_>>>()?;
-                    if requested.is_some_and(|selection| {
-                        selection
-                            .iter()
-                            .any(|p| !pages.iter().any(|v| v["index"] == *p))
-                    }) {
-                        return Err(page_error(
-                            "page_out_of_bounds",
-                            "Choose design page numbers from availablePages",
-                            task,
-                            available.clone(),
-                            json!({"command":"select","taskId":task,"requiredArgument":"pages"}),
-                        ));
-                    }
-                    if source.get("autoTaskId").is_none_or(Value::is_null) {
-                        let selection = requested.ok_or_else(|| page_error("page_selection_required", format!("This design has {} pages. Choose from availablePages, run canvatopsd select {task} PAGE_NUMBERS, then canvatopsd wait {task}", pages.len()), task, available, json!({"command":"select","taskId":task,"requiredArgument":"pages"})))?;
-                        submit(
-                            client,
-                            "/task/page-request/create",
-                            &json!({"taskId":task,"submitKey":task,"pages":selection}),
-                            Some(deadline),
-                        )?;
-                    }
-                    continue;
-                }
-                "pending" => (),
-                _ => return Err(invalid("Unknown page discovery status")),
-            }
+            wait_for_next_read(deadline, task)?;
+            continue;
         } else {
             let pages = conversion_pages(&status)?;
             if pages.is_empty() {
-                return Err(task_error(
-                    "conversion_pages_missing",
-                    "No active conversion pages remain; inspect status",
-                    task,
-                ));
+                wait_for_next_read(deadline, task)?;
+                continue;
             }
             if let Some(requested) = requested {
                 let mut selected = pages
@@ -294,7 +238,7 @@ fn wait_until(
                     ));
                 }
             }
-            if pages.iter().any(|v| requires_input(v) || cancelled(v)) {
+            if pages.iter().any(|v| needs_attention(v) || cancelled(v)) {
                 return Err(task_error(
                     "task_requires_attention",
                     "A selected page requires attention; inspect status",
@@ -305,14 +249,19 @@ fn wait_until(
                 return summary(&status);
             }
         }
-        let remaining = deadline.saturating_duration_since(Instant::now());
-        if remaining.is_zero() {
-            return Err(task_error(
-                "wait_timeout",
-                "Conversion wait deadline reached",
-                task,
-            ));
-        }
-        std::thread::sleep(remaining.min(Duration::from_secs(5)));
+        wait_for_next_read(deadline, task)?;
     }
+}
+
+fn wait_for_next_read(deadline: Instant, task: &str) -> Result<()> {
+    let remaining = deadline.saturating_duration_since(Instant::now());
+    if remaining.is_zero() {
+        return Err(task_error(
+            "wait_timeout",
+            "Conversion wait deadline reached",
+            task,
+        ));
+    }
+    std::thread::sleep(remaining.min(Duration::from_secs(5)));
+    Ok(())
 }

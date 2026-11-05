@@ -1,6 +1,6 @@
 [package]
 name = "canvatopsd-cli"
-version = "3.2.2"
+version = "3.4.10"
 edition = "2024"
 rust-version = "1.85"
 description = "Canva to PSD CLI for AI agents: convert public Canva links to editable layered Photoshop files"
@@ -16,6 +16,7 @@ name = "canvatopsd"
 path = "src/main.rs"
 
 [dependencies]
+base64 = "0.22"
 anyhow = "1"
 clap = { version = "4.5", features = ["derive", "string"] }
 dirs = "6"
@@ -31,7 +32,7 @@ semver = "1"
 sha2 = "0.10"
 tempfile = "3"
 url = "2"
-uuid = { version = "1", features = ["v4"] }
+uuid = "1"
 
 [target.'cfg(windows)'.dependencies]
 windows-permissions = "0.2.4"

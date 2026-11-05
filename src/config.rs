@@ -8,11 +8,18 @@ use fs2::FileExt;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
-    env,
     fs::{self, OpenOptions},
     path::PathBuf,
 };
 pub type Entries = BTreeMap<String, String>;
+#[derive(Default, Deserialize)]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+struct BuiltinSettings {
+    base_url: Option<String>,
+    origin: Option<String>,
+    operator_token: Option<String>,
+    proxy_token: Option<String>,
+}
 #[derive(Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
@@ -26,6 +33,8 @@ pub struct Settings {
     pub submission_tokens: BTreeMap<String, Entries>,
     #[serde(default)]
     pub task_parents: BTreeMap<String, Entries>,
+    #[serde(default)]
+    pub internal_submissions: bool,
     #[serde(flatten)]
     pub extra: BTreeMap<String, serde_json::Value>,
 }
@@ -33,6 +42,7 @@ pub struct Connection {
     pub base_url: String,
     pub origin: String,
     pub timeout: u64,
+    pub internal_submissions: bool,
     pub cookies: Entries,
     pub parents: Entries,
     pub operator_token: Option<String>,
@@ -42,10 +52,7 @@ pub fn home() -> Result<PathBuf> {
     dirs::home_dir().context("Cannot locate home directory")
 }
 pub fn state_path() -> Result<PathBuf> {
-    Ok(match env::var_os("CANVATOPSD_CONFIG") {
-        Some(path) => path.into(),
-        None => home()?.join(".config/canvatopsd/config.json"),
-    })
+    Ok(crate::installation::root()?.join("data/cli/session.json"))
 }
 pub fn read() -> Result<Settings> {
     match fs::File::open(state_path()?) {
@@ -129,10 +136,11 @@ pub fn private_permissions_file(file: &std::fs::File, mode: u32) -> Result<()> {
     Ok(())
 }
 pub fn connection(options: &Options, settings: &Settings) -> Result<Connection> {
+    let builtin: BuiltinSettings = serde_json::from_slice(crate::installation::CONFIGURATION)?;
     let base = options
         .base_url
         .clone()
-        .or_else(|| env::var("CANVATOPSD_BASE_URL").ok())
+        .or(builtin.base_url)
         .or_else(|| settings.base_url.clone())
         .unwrap_or_else(|| "https://canvatopsd.com/api".into());
     let url = secure_url(&base)?;
@@ -148,7 +156,7 @@ pub fn connection(options: &Options, settings: &Settings) -> Result<Connection> 
     let origin = options
         .origin
         .clone()
-        .or_else(|| env::var("CANVATOPSD_ORIGIN").ok())
+        .or(builtin.origin)
         .or_else(|| {
             if settings.base_url.as_ref() == Some(&base_url) {
                 settings.origin.clone()
@@ -172,7 +180,8 @@ pub fn connection(options: &Options, settings: &Settings) -> Result<Connection> 
         base_url,
         origin,
         timeout: options.timeout,
-        operator_token: env::var("CANVATOPSD_OPERATOR_TOKEN").ok(),
-        proxy_token: env::var("CANVATOPSD_PROXY_TOKEN").ok(),
+        internal_submissions: settings.internal_submissions,
+        operator_token: builtin.operator_token,
+        proxy_token: builtin.proxy_token,
     })
 }

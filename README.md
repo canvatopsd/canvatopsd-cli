@@ -1,6 +1,6 @@
 # Canva to PSD CLI — CanvaToPSD
 
-Convert public Canva design links into editable, layered Photoshop PSD files from your terminal or AI agent. CanvaToPSD preserves supported editable text and separates images and artwork into layers. Conversion runs on the hosted service, with free previews and paid downloads.
+Convert public Canva design links into editable, layered Photoshop PSD files from your terminal or AI agent. CanvaToPSD preserves supported editable text and separates images and artwork into layers. Conversion runs on the hosted service, with payment before conversion and completed-file previews and downloads.
 
 [npm](https://www.npmjs.com/package/@canvatopsd/cli) · [Agent setup](https://canvatopsd.com/ai-agent) · [Real examples](https://canvatopsd.com/showcases) · [Pricing](https://canvatopsd.com/pricing) · [Documentation](doc/index.md)
 
@@ -28,26 +28,29 @@ Supported platforms: macOS Apple Silicon (ARM64), Linux ARM64/x64 and Windows AR
 In Canva, choose **Share → Public view link → Copy link**. Copied `canva.link` share URLs are also accepted.
 
 ```sh
-canvatopsd convert 'CANVA_PUBLIC_VIEW_URL'
+canvatopsd convert 'CANVA_PUBLIC_VIEW_URL' --email 'you@example.com'
 # Replace TASK with the returned taskId:
-canvatopsd preview TASK
 canvatopsd checkout TASK
 # After the user completes payment through the returned checkoutUrl:
+canvatopsd wait TASK
+canvatopsd preview TASK
 canvatopsd download TASK --out ./design.psd
 ```
 
 Share the returned `previewUrl` unchanged to open the Web preview. For a whole-page image, use `preview TASK --out ./preview.webp`. Web owns interactive layer previews.
 
-Keep the same task ID throughout. Conversion and previews are free; PSD downloads require payment at the [current price](https://canvatopsd.com/pricing). An email address is optional for notifications.
+Keep the same task ID throughout. Conversion requires upfront payment at the [current price](https://canvatopsd.com/pricing). An email address is required for new conversions and delivery notifications.
 
 Optional `--locale CODE` on `convert` or `create` sets the task page and notification language on APIs supporting that field. Omit it to use the API default, English. It does not change PSD content or layer naming; see [the usage guide](doc/usage.md).
 
 For multiple pages, choose the design page numbers explicitly:
 
 ```sh
-canvatopsd convert 'CANVA_PUBLIC_VIEW_URL' --pages 1,3
+canvatopsd convert 'CANVA_PUBLIC_VIEW_URL' --email 'you@example.com' --pages 1,3
+canvatopsd checkout TASK
+# After payment:
+canvatopsd wait TASK
 canvatopsd preview TASK --page 3
-canvatopsd checkout TASK --page 3
 canvatopsd download TASK --page 3 --out ./page3.psd
 ```
 

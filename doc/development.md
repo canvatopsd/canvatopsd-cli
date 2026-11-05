@@ -27,7 +27,9 @@ Keep Git authorship suitable for public distribution. This repository uses the p
 
 Public documentation and bundled Agent instructions are English-only. Final release checks decode packaged text as strict UTF-8 and reject non-ASCII letters and replacement characters. English text may use typographic punctuation.
 
-Argument errors expose the error category and schema-generated usage, never raw argument values. Credential files use mode 0600 on Unix. Windows uses a protected DACL granting full control only to the current process user, without inherited access rules. Existing configuration files are restricted before reading; temporary configuration and exported credentials are restricted before writing. Permission failures stop the command. Native platform acceptance verifies legacy configuration migration, export permissions and credential-safe argument errors using synthetic data, including Windows x64 and ARM64.
+Argument errors expose the error category and schema-generated usage, never raw argument values. Credential files use mode 0600 on Unix. Windows uses a protected DACL granting full control only to the current process user, without inherited access rules. Existing configuration files are restricted before reading; temporary configuration and exported credentials are restricted before writing. Permission failures stop the command. Native platform acceptance verifies current runtime configuration and export permissions and credential-safe argument errors using synthetic data, including Windows x64 and ARM64.
+
+Standalone builds use exact snapshots of the provider-owned Rust task-ID and native installation contracts in `src/contracts/` and `deployment/native-build.rs`. When Web source is available in the product checkout, `npm run check` requires these snapshots and the UI locale schema to match `web/contracts/`. Update the provider and snapshots together; do not fork their behavior.
 
 The provider-owned language schema is copied to `src/ui-locale.schema.json`; see [submission compatibility](submission-compatibility.md) for synchronization and API release ordering.
 
@@ -41,7 +43,9 @@ Set `CANVATOPSD_BUILD_TARGETS` to a comma-separated list of target names. For ex
 
 `npm version patch` synchronizes Cargo.toml, Cargo.lock, codemeta.json and bundled Skill version text; regenerate command documentation with `npm run doc:commands`. Published or archived versions are immutable. Use a new version for any changed executable, documentation or Skill.
 
-`npm pack` enforces build → final-directory checks → candidate archive extraction and checks → immutable archive integrity verification. `deploy:local` installs that checked archive. `npm publish --dry-run` checks completeness without publishing; actual publication requires scope access and an explicit release action. Existing checked archives are reused without rebuilding under the same version.
+`npm pack` enforces build → final-directory checks → candidate archive extraction and checks → immutable archive integrity verification. `deploy:local` installs that checked archive and configures the maintainer CLI for
+`http://localhost:8795/api`. Override the local Web origin with
+`CANVATOPSD_LOCAL_WEB_ORIGIN` when using a different loopback port. `npm publish --dry-run` checks completeness without publishing; actual publication requires scope access and an explicit release action. Existing checked archives are reused without rebuilding under the same version.
 
 Public release metadata contains the version, public source revision, runtime, targets and build time. Working-tree file lists and developer-machine details are not published. Old private development archives belong outside this public checkout. If packaging is interrupted, run `npm run postpack` to clean generated files.
 

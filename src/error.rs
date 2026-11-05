@@ -23,7 +23,6 @@ pub struct CommandError {
     pub message: String,
     pub status: Option<u16>,
     pub task_id: Option<String>,
-    pub submit_key: Option<String>,
     pub available_pages: Option<Vec<u32>>,
     pub next_action: Option<Value>,
 }
@@ -34,7 +33,6 @@ impl CommandError {
             message: message.into(),
             status: None,
             task_id: None,
-            submit_key: None,
             available_pages: None,
             next_action: None,
         }
@@ -46,9 +44,6 @@ impl CommandError {
         }
         if let Some(task) = &self.task_id {
             value["taskId"] = json!(task);
-        }
-        if let Some(key) = &self.submit_key {
-            value["submitKey"] = json!(key);
         }
         if let Some(pages) = &self.available_pages {
             value["availablePages"] = json!(pages);
@@ -73,15 +68,12 @@ pub fn task_error(code: &str, message: impl Into<String>, task: &str) -> anyhow:
     error.task_id = Some(task.into());
     error.into()
 }
-pub fn submission_error(error: anyhow::Error, key: &str, task: Option<&str>) -> anyhow::Error {
+pub fn submission_error(error: anyhow::Error, task: &str) -> anyhow::Error {
     let mut error = match error.downcast::<CommandError>() {
         Ok(error) => error,
         Err(error) => CommandError::new("cli_error", error.to_string()),
     };
-    error.submit_key = Some(key.into());
-    if let Some(task) = task {
-        error.task_id = Some(task.into());
-    }
+    error.task_id = Some(task.into());
     error.into()
 }
 pub fn network_error(error: reqwest::Error) -> anyhow::Error {

@@ -37,4 +37,20 @@ const version = execFileSync(process.execPath, [entry, "--version"], {
 }).trim();
 if (version !== metadata.version)
   throw new Error("Installed npm CLI version mismatch");
+const localOrigin =
+  process.env.CANVATOPSD_LOCAL_WEB_ORIGIN ?? "http://localhost:8795";
+execFileSync(
+  process.execPath,
+  [
+    entry,
+    "--origin",
+    localOrigin,
+    "init",
+    new URL("/api", localOrigin).href,
+    "--internal",
+  ],
+  {
+    stdio: "inherit",
+  },
+);
 console.log(JSON.stringify({ environment: "local", archive, version, entry }));

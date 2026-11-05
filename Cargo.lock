@@ -120,9 +120,10 @@ checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
 
 [[package]]
 name = "canvatopsd-cli"
-version = "3.2.2"
+version = "3.4.10"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
  "clap",
  "dirs",
  "email_address",
@@ -1368,7 +1369,6 @@ version = "1.26.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2ef6dac1e96601b4fb3acccccff2139741fcb757cb9a36089bf5be91cfb285ce"
 dependencies = [
- "getrandom 0.4.3",
  "js-sys",
  "wasm-bindgen",
 ]

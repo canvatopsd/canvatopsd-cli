@@ -21,6 +21,8 @@ const result = JSON.parse(
     [
       "convert",
       "https://www.canva.com/design/EXAMPLE/EXAMPLE/view",
+      "--email",
+      "you@example.com",
       "--dry-run",
     ],
     { encoding: "utf8" },

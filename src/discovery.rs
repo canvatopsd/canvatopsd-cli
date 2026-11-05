@@ -14,7 +14,9 @@ fn argument_schema(argument: &clap::Arg) -> Value {
             "seconds" => json!({"type":"integer","minimum":1}),
             "page" => json!({"type":"integer","minimum":1,"maximum":u32::MAX}),
             "offset" => json!({"type":"integer","minimum":0}),
-            "task" | "key" => json!({"type":"string","format":"uuid"}),
+            "task" | "task_id" => {
+                json!({"type":"string","format":"base64url-uuidv7","minLength":22,"maxLength":22,"pattern":"^[A-Za-z0-9_-]{22}$"})
+            }
             "url" => json!({"type":"string","format":"uri"}),
             _ => json!({"type":"string"}),
         }
@@ -39,18 +41,18 @@ fn effects(path: &[&str]) -> Value {
         ("skill", _) | ("auth", "status") => (false, false, "none"),
         ("update", _) => (true, false, "registry-read"),
         ("auth", "import") => (true, true, "access-exchange"),
-        ("convert" | "create" | "select", _) => (true, true, "conversion-submit"),
-        ("pages" | "wait", _) => (true, true, "page-discovery-may-start-conversion"),
-        ("checkout", _) => (true, true, "checkout-create"),
+        ("convert" | "create", _) => (true, true, "conversion-submit"),
+        ("pages" | "wait", _) => (true, true, "read"),
+        ("checkout", _) => (true, true, "private-link-create"),
         ("payment", "confirm") | ("confirm", _) => (true, true, "payment-capture"),
-        ("payment", _) | ("download", _) => (true, true, "payment-sync"),
+        ("payment", _) | ("download", _) => (true, true, "read"),
         ("request", _) => (true, true, "depends-on-request-path"),
         _ => (true, true, "read"),
     };
     let mut result = json!({"network":network,"mayWriteLocalState":local_write,"serverAction":server_action,
         "mayCapturePayment": if root == "request" { Value::Null } else { json!(root == "confirm" || (root == "payment" && child == "confirm")) },
-        "rawApi":root == "request" || root == "operator"});
-    if ["convert", "create", "select", "checkout"].contains(&root) {
+        "rawApi":root == "request"});
+    if ["convert", "create", "checkout"].contains(&root) {
         result["dryRun"] = json!({"network":root == "checkout","serverAction":if root == "checkout" {"read"} else {"none"},"writesLocalCredentials":root == "checkout"});
     }
     result

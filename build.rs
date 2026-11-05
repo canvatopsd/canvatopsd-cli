@@ -1,7 +1,10 @@
+#[path = "deployment/native-build.rs"]
+mod native_build;
 use serde_json::{Value, json};
 use std::{env, fs, path::PathBuf};
 
 fn main() {
+    native_build::embed("prod");
     println!("cargo:rerun-if-changed=package.json");
     let manifest_path =
         PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").expect("Cargo manifest directory"));

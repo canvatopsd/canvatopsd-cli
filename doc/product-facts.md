@@ -4,25 +4,25 @@ CanvaToPSD is a hosted Canva-to-PSD conversion service with a local Rust command
 
 ## Identity and access
 
-| Field                          | Fact                                                                            |
-| ------------------------------ | ------------------------------------------------------------------------------- |
-| Product                        | CanvaToPSD                                                                      |
-| CLI command                    | `canvatopsd`                                                                    |
-| npm package name               | `@canvatopsd/cli`                                                               |
-| Agent Skill name               | `canvatopsd`                                                                    |
-| Product and Agent setup        | [canvatopsd.com/ai-agent](https://canvatopsd.com/ai-agent)                      |
-| Hosted API endpoint            | `https://canvatopsd.com/api`                                                    |
-| Support                        | [support@canvatopsd.com](mailto:support@canvatopsd.com)                         |
-| Ordinary hosted authentication | Per-task credentials created and stored locally; no account or API key required |
-| Email                          | Optional; enables notifications                                                 |
-| Conversion and preview         | Free                                                                            |
-| PSD download                   | Paid; consult [current pricing](https://canvatopsd.com/pricing)                 |
+| Field                          | Fact                                                                                 |
+| ------------------------------ | ------------------------------------------------------------------------------------ |
+| Product                        | CanvaToPSD                                                                           |
+| CLI command                    | `canvatopsd`                                                                         |
+| npm package name               | `@canvatopsd/cli`                                                                    |
+| Agent Skill name               | `canvatopsd`                                                                         |
+| Product and Agent setup        | [canvatopsd.com/ai-agent](https://canvatopsd.com/ai-agent)                           |
+| Hosted API endpoint            | `https://canvatopsd.com/api`                                                         |
+| Support                        | [support@canvatopsd.com](mailto:support@canvatopsd.com)                              |
+| Ordinary hosted authentication | Per-task credentials created and stored locally; no account or API key required      |
+| Email                          | Required for new submissions; receives delivery notifications                        |
+| Conversion                     | Prepaid                                                                              |
+| PSD preview and download       | Included after conversion; consult [current pricing](https://canvatopsd.com/pricing) |
 
 CanvaToPSD is an independent service. The CLI's use of Canva and Photoshop formats does not imply an official Canva or Adobe CLI.
 
 ## Input and output
 
-Accepted source URLs are Canva **Share → Public view link → Copy link** URLs and copied `https://canva.link/...` share links. Existing conversions are addressed by their task UUID. Private editor links, arbitrary image files, PDFs and existing PSDs are not conversion inputs to this CLI.
+Accepted source URLs are Canva **Share → Public view link → Copy link** URLs and copied `https://canva.link/...` share links. Existing conversions are addressed by their task ID. Private editor links, arbitrary image files, PDFs and existing PSDs are not conversion inputs to this CLI.
 
 The CLI can retrieve a layered PSD, Web preview link, whole-page WebP image, font ZIP and font-list TXT when available for the task. Static single-page and selected multi-page designs are supported. Design page numbers start at 1. Multiple selected pages produce separate page results; preserve the original task ID and add `--page N` when retrieving a selected page.
 
@@ -47,7 +47,7 @@ Business commands emit `{"ok":true,"data":...}` on stdout, or `{"ok":false,"erro
 
 `canvatopsd discover` returns the actual command tree plus product capabilities, supported input/output descriptions, documentation paths and service requirements. `canvatopsd skill show` returns the bundled instructions. Both work offline without reading task credentials.
 
-The shortest workflow is `convert URL` → `preview TASK` → `checkout TASK` → user payment → `download TASK --out FILE`. Share the hosted `checkoutUrl` unchanged. `payment confirm` can capture approved funds. A request to convert a design does not itself imply permission to pay.
+The shortest workflow is `convert URL --email EMAIL` → `checkout TASK` → user payment → `wait TASK` → `preview TASK` → `download TASK --out FILE`. Share the hosted `checkoutUrl` unchanged. `payment confirm` can capture approved funds. A request to convert a design does not itself imply permission to pay.
 
 ## References for quotation and implementation
 

@@ -58,12 +58,6 @@ pub fn save(mut response: Response, output: &str, receipt: Option<&Value>) -> Re
     }
     Ok(result)
 }
-fn select_page(pages: &[Value], number: u32) -> Result<&Value> {
-    pages
-        .iter()
-        .find(|page| page["index"] == number)
-        .ok_or_else(|| invalid("Requested page is not in the available files"))
-}
 pub fn preview(
     client: &mut Client,
     task: &str,
@@ -78,21 +72,20 @@ pub fn preview(
         return client.json("/task/preview/link/create", &input);
     };
     ensure_new_file(output)?;
-    let quote = tasks::quote(client, task, page, "preview")?;
-    let mut input = quote.input;
-    input["name"] = json!("preview.webp");
-    let listing = client.json("/task/preview/list", &input)?;
-    input["pageId"] = json!(field(
-        select_page(array(&listing, "pages")?, quote.page)?,
-        "pageId"
-    )?);
+    let (_, number) = tasks::result_page(client, task, page, "preview")?;
     let saved = save(
-        client.post("/task/preview/read", &input, false, None)?,
+        client.post(
+            "/task/result/preview/read",
+            &json!({"taskId":task,"page":number}),
+            false,
+            None,
+        )?,
         output,
         None,
     )?;
-    tasks::public_result(saved, task, quote.page)
+    tasks::public_result(saved, task, number)
 }
+
 pub fn download(
     client: &mut Client,
     task: &str,
@@ -102,28 +95,24 @@ pub fn download(
 ) -> Result<Value> {
     ensure_new_file(output)?;
     let file = match format {
-        "psd" => "page-0001.psd",
+        "psd" => "page-1.psd",
         "fonts" => "fonts.zip",
         "font-list" => "fonts.txt",
         _ => return Err(invalid("Choose psd, fonts or font-list")),
     };
-    let quote = tasks::quote(client, task, page, "download")?;
-    let mut input = quote.input;
-    client.json("/task/checkout/read", &input)?;
-    let listing = client.json("/task/delivery/read", &input)?;
-    input["pageId"] = json!(field(
-        select_page(array(&listing, "pages")?, quote.page)?,
-        "pageId"
-    )?);
-    input["name"] = json!(file);
-    let receipt = client.json("/task/delivery/download-url/create", &input)?;
+    let (_, number) = tasks::result_page(client, task, page, "download")?;
+    let receipt = client.json(
+        "/task/result/download-url/create",
+        &json!({"taskId":task,"page":number,"name":file}),
+    )?;
     let response = client.download(field(&receipt, "url")?)?;
     let mut result = save(response, output, Some(&receipt))?;
     result["taskId"] = json!(task);
-    result["page"] = json!(quote.page);
+    result["page"] = json!(number);
     result["format"] = json!(format);
     Ok(result)
 }
+
 pub fn ensure_new_file(output: &str) -> Result<()> {
     match std::fs::symlink_metadata(Path::new(output)) {
         Ok(_) => anyhow::bail!("Output already exists: {output}"),
@@ -133,14 +122,16 @@ pub fn ensure_new_file(output: &str) -> Result<()> {
 }
 
 pub fn files(client: &mut Client, task: &str, page: Option<u32>) -> Result<Value> {
-    let quote = tasks::quote(client, task, page, "files")?;
-    let listing = client.json("/task/delivery/read", &quote.input)?;
-    let selected = select_page(array(&listing, "pages")?, quote.page)?;
+    let (result, number) = tasks::result_page(client, task, page, "files")?;
+    let selected = array(&result, "pages")?
+        .iter()
+        .find(|value| value["page"] == number)
+        .ok_or_else(|| invalid("Page is missing from result"))?;
     let files = array(selected, "files")?
         .iter()
         .filter_map(|file| {
             let format = match file["name"].as_str()? {
-                "page-0001.psd" => "psd",
+                "page-1.psd" => "psd",
                 "fonts.zip" => "fonts",
                 "fonts.txt" => "font-list",
                 _ => return None,
@@ -148,5 +139,5 @@ pub fn files(client: &mut Client, task: &str, page: Option<u32>) -> Result<Value
             Some(json!({"format":format,"bytes":file["bytes"]}))
         })
         .collect::<Vec<_>>();
-    Ok(json!({"taskId":task,"page":quote.page,"files":files}))
+    Ok(json!({"taskId":task,"page":number,"files":files}))
 }

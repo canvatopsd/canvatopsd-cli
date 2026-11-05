@@ -5,8 +5,13 @@ mod client;
 mod config;
 mod discovery;
 mod error;
+#[path = "contracts/native-runtime.rs"]
+mod installation;
 mod payment;
 mod skill;
+mod submission;
+#[path = "contracts/task-id.rs"]
+mod task_id;
 mod tasks;
 mod updates;
 mod validation;
@@ -14,7 +19,7 @@ mod validation;
 mod windows_permissions;
 
 use anyhow::Result;
-use args::{Cli, Command, Operator, Payment, Selection};
+use args::{Cli, Command, Payment, Selection};
 use clap::Parser;
 use client::Client;
 use error::{CommandError, submission_error};
@@ -43,22 +48,27 @@ fn run(cli: Cli) -> Result<Value> {
                 validation::canva_link(url)
             };
         }
-        Command::Init { url } => {
+        Command::Init { url, internal } => {
+            let saved = config::read()?;
             let init = args::Options {
                 base_url: Some(
                     url.clone()
+                        .or_else(|| saved.base_url.clone())
                         .unwrap_or_else(|| "https://canvatopsd.com/api".into()),
                 ),
                 origin: options.origin.clone(),
                 timeout: 30,
             };
-            let connection = config::connection(&init, &config::Settings::default())?;
+            let connection = config::connection(&init, &saved)?;
             config::update(|settings| {
                 settings.base_url = Some(connection.base_url.clone());
                 settings.origin = Some(connection.origin.clone());
+                settings.internal_submissions = *internal;
                 Ok(())
             })?;
-            return Ok(json!({"baseUrl":connection.base_url,"origin":connection.origin}));
+            return Ok(
+                json!({"baseUrl":connection.base_url,"origin":connection.origin,"internalSubmissions":internal}),
+            );
         }
         Command::Create(input) | Command::Convert { input, .. } => {
             let mut body = tasks::submission(input)?;
@@ -67,6 +77,9 @@ fn run(cli: Cli) -> Result<Value> {
             } else {
                 None
             };
+            if let Some(pages) = &selection {
+                body["pages"] = json!(pages);
+            }
             if input.dry_run {
                 return if let Command::Convert { seconds, .. } = &cli.command {
                     let mut result = json!({"dryRun":true,"input":body,"seconds":seconds});
@@ -75,42 +88,21 @@ fn run(cli: Cli) -> Result<Value> {
                     }
                     Ok(result)
                 } else {
-                    Ok(json!({"path":"/task/create","input":body,"dryRun":true}))
+                    Ok(
+                        json!({"path":"/task/create","preparePath":"/task/prepare","input":body,"dryRun":true}),
+                    )
                 };
             }
             let mut client = context(options)?;
-            let key = field(&body, "submitKey")?.to_owned();
-            body["taskToken"] = json!(auth::submission_token(&client.config, &key)?);
-            let created = client::submit(&mut client, "/task/create", &body, None)?;
+            let created = submission::receive(&mut client, body)?;
             if let Command::Convert { seconds, .. } = &cli.command {
                 let task = field(&created, "taskId")?;
                 eprintln!("{}", json!({"taskId":task}));
-                let mut result = tasks::wait(&mut client, task, *seconds, selection.as_deref())
-                    .map_err(|e| submission_error(e, &key, Some(task)))?;
-                result["submitKey"] = json!(key);
+                let result = tasks::wait(&mut client, task, *seconds, selection.as_deref())
+                    .map_err(|e| submission_error(e, task))?;
                 return Ok(result);
             }
             return Ok(created);
-        }
-        Command::Select {
-            task,
-            pages,
-            key,
-            dry_run,
-        } => {
-            let body = tasks::selection(task, pages, key.as_deref())?;
-            if *dry_run {
-                return Ok(
-                    json!({"taskId":task,"pages":body["pages"],"submitKey":body["submitKey"],"dryRun":true}),
-                );
-            }
-            client::submit(
-                &mut context(options)?,
-                "/task/page-request/create",
-                &body,
-                None,
-            )?;
-            return Ok(json!({"taskId":task,"pages":body["pages"],"submitKey":body["submitKey"]}));
         }
         _ => (),
     }
@@ -133,12 +125,12 @@ fn run(cli: Cli) -> Result<Value> {
                 .path()
                 .starts_with("/api");
             Ok(
-                json!({"baseUrl":config.base_url,"origin":config.origin,"version":env!("CARGO_PKG_VERSION"),"runtime":"rust","endpoint":if web {"web"} else {"api"},"protocol":protocol,"taskSessions":config.cookies.len(),"operatorAuth":if config.operator_token.is_some() {"env"} else {"missing"},"proxyAuth":if web {"web-managed"} else if config.proxy_token.is_some() {"env"} else {"missing"},"note":"API protocol verified; task authorization, Runner readiness, payment and PSD delivery require separate checks."}),
+                json!({"baseUrl":config.base_url,"origin":config.origin,"version":env!("CARGO_PKG_VERSION"),"runtime":"rust","endpoint":if web {"web"} else {"api"},"protocol":protocol,"taskSessions":config.cookies.len(),"operatorAuth":if config.operator_token.is_some() {"embedded"} else {"missing"},"proxyAuth":if web {"web-managed"} else if config.proxy_token.is_some() {"embedded"} else {"missing"},"note":"API protocol verified; task authorization, Runner readiness, payment and PSD delivery require separate checks."}),
             )
         }
         Command::Status { task } => tasks::summary(&tasks::read_status(&mut client, task, None)?),
         Command::Wait { task, seconds } => tasks::wait(&mut client, task, *seconds, None),
-        Command::Pages { task, refresh } => tasks::source_pages(&mut client, task, *refresh),
+        Command::Pages { task } => tasks::source_pages(&mut client, task),
         Command::Preview { selection, out } => {
             artifacts::preview(&mut client, &selection.task, selection.page, out.as_deref())
         }
@@ -168,17 +160,6 @@ fn run(cli: Cli) -> Result<Value> {
             payment::checkout(&mut client, selection, *dry_run)
         }
         Command::Auth { command } => auth::run(&mut client, command),
-        Command::Operator { command } => match command {
-            Operator::TaskList { offset } => {
-                client.json_with("/task/list", &json!({"offset":offset}), true, None)
-            }
-            Operator::NotificationStatus { task } => client.json_with(
-                "/notification/status",
-                &validation::task_input(task)?,
-                true,
-                None,
-            ),
-        },
         Command::Request {
             path,
             body,
@@ -197,6 +178,9 @@ fn run(cli: Cli) -> Result<Value> {
     }
 }
 fn main() {
+    if installation::inspect() {
+        return;
+    }
     let cli = match Cli::try_parse() {
         Ok(cli) => cli,
         Err(error) if error.kind() == clap::error::ErrorKind::DisplayVersion => {

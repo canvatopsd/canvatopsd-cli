@@ -21,3 +21,5 @@ CanvaToPSD converts public Canva design links into downloadable layered Photosho
 - [Support](mailto:support@canvatopsd.com)
 
 The documentation bundled with an installed package describes that package. Website documentation follows the independently deployed website release. Use `canvatopsd --version` and `canvatopsd discover` to identify the running CLI.
+
+- [R2 submission reception and recovery](submission-inbox.md)

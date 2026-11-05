@@ -12,7 +12,7 @@ Do not select it for editing an existing PSD, arbitrary image/PDF conversion, of
 
 The Rust CLI is published on npm. Install it with `npm install -g @canvatopsd/cli` or `npx --yes @canvatopsd/cli --help`. Node.js 22.16+ launches a bundled Rust binary. End users need no Rust compiler. Native binaries can also run directly.
 
-The CLI uses the hosted service at `https://canvatopsd.com/api` by default. Normal hosted operations need no account, API key or email. Optional `--email` enables notifications. Task credentials are stored locally and must not appear in chat or logs.
+The CLI uses the hosted service at `https://canvatopsd.com/api` by default. Normal hosted operations need no account or API key. New submissions require `--email EMAIL` for delivery notifications. Task credentials are stored locally and must not appear in chat or logs.
 
 Optional `--locale CODE` on `convert` or `create` sets the task page and notification language on APIs supporting that field. Omit it to use the API default, English. It does not change PSD content or layer naming; see [the usage guide](usage.md).
 
@@ -30,36 +30,33 @@ canvatopsd skill show
 
 `discover [command]` is the authoritative, offline command tree, generated from Clap definitions in the running binary. By default it lists product commands; `discover --advanced` also includes maintenance operations and connection settings. It includes descriptions, required arguments, option flags, defaults, allowed values, parameter `schema` types/ranges, `advanced` visibility and command `effects`. `effects.mayCapturePayment` is true for payment confirmation and null for raw requests whose action is determined at runtime. `effects.dryRun` describes the distinct dry-run behavior. The additive `data.product` object supplies the SPDX license identifier, capabilities, input/output formats, service requirements and package-relative documentation paths; `data.command` remains the actual command tree. Read [the generated Markdown reference](command-reference.md) when execution is unavailable. Nested paths accept separate words or a quoted string, e.g. `discover skill install`. No credential file or service connection is required for discovery.
 
-Successful business commands emit `{"ok":true,"data":...}` on stdout and exit 0. Errors emit `{"ok":false,"error":{"code":"...","message":"..."}}` and exit 1. API errors include HTTP `status`. Submission failures may include `submitKey` and `taskId`. Help/version are text; diagnostics use stderr. Do not add `--json`.
+Successful business commands emit `{"ok":true,"data":...}` on stdout and exit 0. Errors emit `{"ok":false,"error":{"code":"...","message":"..."}}` and exit 1. API errors include HTTP `status`. Submission failures may include `taskId`. Help/version are text; diagnostics use stderr. Do not add `--json`.
 
 ## Intent to command mapping
 
-| User intent                       | Command                                   | Effect                                                 |
-| --------------------------------- | ----------------------------------------- | ------------------------------------------------------ |
-| Check the selected service        | `doctor`                                  | Read-only API protocol check                           |
-| Inspect or normalize a Canva link | `resolve URL`                             | Offline parsing                                        |
-| Validate a future conversion      | `convert URL --pages 1,3 --dry-run`       | Offline; no writes                                     |
-| Convert Canva to PSD previews     | `convert URL [--pages 1,3]`               | Submits and waits                                      |
-| Continue an existing task         | `status TASK` / `wait TASK`               | Live reads; wait may discover/select source pages      |
-| Choose design pages               | `select TASK 1,3`                         | Submits page selection                                 |
-| Inspect preview                   | `preview TASK`                            | Returns a private Web preview link                     |
-| Get payment link                  | `checkout TASK`                           | Creates/reuses checkout; present checkoutUrl unchanged |
-| Download Photoshop PSD            | `download TASK --out FILE`                | Synchronizes payment and verifies the transfer         |
-| Download fonts                    | `download TASK --format fonts --out FILE` | Same authorization and payment requirements            |
-| Back up task access               | `auth export TASK FILE`                   | Writes a secret credential file                        |
-| Install Agent instructions        | `skill install codex`                     | Writes Skill files in the user's Agent directory       |
+| User intent                       | Command                                           | Effect                                                 |
+| --------------------------------- | ------------------------------------------------- | ------------------------------------------------------ |
+| Check the selected service        | `doctor`                                          | Read-only API protocol check                           |
+| Inspect or normalize a Canva link | `resolve URL`                                     | Offline parsing                                        |
+| Validate a future conversion      | `convert URL --email EMAIL --pages 1,3 --dry-run` | Offline; no writes                                     |
+| Convert Canva to PSD previews     | `convert URL --email EMAIL [--pages 1,3]`         | Submits and waits                                      |
+| Continue an existing task         | `status TASK` / `wait TASK`                       | Live reads; wait follows the selected pages            |
+| Inspect preview                   | `preview TASK`                                    | Returns a private Web preview link                     |
+| Get payment link                  | `checkout TASK`                                   | Creates/reuses checkout; present checkoutUrl unchanged |
+| Download Photoshop PSD            | `download TASK --out FILE`                        | Synchronizes payment and verifies the transfer         |
+| Download fonts                    | `download TASK --format fonts --out FILE`         | Same authorization and payment requirements            |
+| Back up task access               | `auth export TASK FILE`                           | Writes a secret credential file                        |
+| Install Agent instructions        | `skill install codex`                             | Writes Skill files in the user's Agent directory       |
 
-For multi-page tasks, add `--page N` to preview, checkout and download. Preserve the original public task ID throughout. Web owns interactive preview rendering.
+For multi-page tasks, add `--page N` to preview and download. Prepaid checkout covers the whole selection. Preserve the original public task ID throughout. Web owns interactive preview rendering.
 
 ## Recommended execution order
 
 1. Read `skill show` and run `doctor` for the intended endpoint.
 2. Validate a public Canva URL with a submission `--dry-run` when helpful.
 3. Run `convert`, preserve its `taskId` and submission key.
-4. Inspect the preview; share the returned hosted checkout link with the user.
-5. After payment, download the PSD and report the saved path and returned integrity evidence.
-
-`wait_timeout` does not cancel work: resume with `wait TASK`. `page_selection_required` means select pages on that existing task. After an uncertain create response, reuse `--key UUID` with identical input. Do not print local tokens or secret auth backups. `payment confirm` can capture funds and requires the user's payment authorization.
+4. Run checkout and share the returned hosted checkout link with the user before conversion starts.
+5. After payment, wait for conversion, inspect the preview and download the PSD. Report the saved path and returned integrity evidence.
 
 ## Skill discovery locations
 
@@ -82,10 +79,9 @@ These references describe capabilities and limits. They do not guarantee an arbi
 
 | Error                              | Next action                                                                                         |
 | ---------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `page_selection_required`          | Run `pages TASK`, select the user's intended page numbers with `select TASK 1,3`, then `wait TASK`. |
 | `wait_timeout`                     | Preserve `taskId` and continue with `wait TASK`; do not create another conversion.                  |
 | `page_required` / `page_not_found` | Read `status TASK` and specify a selected design page using `--page N`.                             |
-| `task_requires_attention`          | Inspect `status TASK` and report the required input; do not repeatedly submit.                      |
+| `task_requires_attention`          | Inspect `status TASK` and report the execution issue; do not repeatedly submit.                     |
 | `page_selection_conflict`          | Inspect the existing task's confirmed selection before proceeding.                                  |
 | `ELOCKED`                          | Wait for the other config writer; reuse the submission key when the request outcome is uncertain.   |
 | HTTP 401/403                       | Import matching task credentials for the selected endpoint; task keys alone cannot restore access.  |
@@ -96,26 +92,9 @@ A download size/hash mismatch leaves no final output file. An existing output fi
 ## Page selection and stable task identity
 
 Normal file and payment commands keep `data.taskId` equal to the original TASK,
-with `data.page` identifying the design page. Raw `request` and `operator`
-responses retain the API shape. A page-selection error includes structured data:
-
-```json
-{
-  "ok": false,
-  "error": {
-    "code": "page_selection_required",
-    "message": "Choose design pages before continuing.",
-    "taskId": "TASK",
-    "availablePages": [1, 2],
-    "nextAction": {
-      "command": "select",
-      "taskId": "TASK",
-      "requiredArgument": "pages"
-    }
-  }
-}
-```
-
-Present the available pages to the user, run `select TASK PAGE_NUMBERS`, then
-resume with `wait TASK`. File commands use `page_required` or `page_not_found`
-with `nextAction.requiredOption` set to `--page`.
+with `data.page` identifying the design page. Raw `request`
+responses retain the API shape. Choose conversion pages when submitting with
+`convert URL --email EMAIL --pages 1,3` or `create URL --email EMAIL --pages 1,3`; omitting `--pages` converts
+page 1 only. `wait TASK` never submits a second page-selection command.
+File commands use `page_required` or `page_not_found` with
+`nextAction.requiredOption` set to `--page` when a converted page must be identified.

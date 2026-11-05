@@ -38,7 +38,7 @@ pub fn run(client: &mut Client, command: &Auth) -> Result<Value> {
         Auth::Status => {
             let settings = config::read()?;
             Ok(
-                json!({"submissionKeys":settings.submission_tokens.get(&client.config.base_url).map(|v| v.keys().collect::<Vec<_>>()).unwrap_or_default(),"baseUrl":client.config.base_url,"taskSessions":client.config.cookies.keys().map(|k| k.trim_start_matches("__Host-canvatopsd-task-")).collect::<Vec<_>>(),"operatorAuth":if client.config.operator_token.is_some() { "env" } else { "missing" }}),
+                json!({"taskIds":settings.submission_tokens.get(&client.config.base_url).map(|v| v.keys().collect::<Vec<_>>()).unwrap_or_default(),"baseUrl":client.config.base_url,"internalSubmissions":client.config.internal_submissions,"taskSessions":client.config.cookies.keys().map(|k| k.trim_start_matches("__Host-canvatopsd-task-")).collect::<Vec<_>>(),"operatorAuth":if client.config.operator_token.is_some() { "embedded" } else { "missing" }}),
             )
         }
         Auth::Clear => {
@@ -51,7 +51,7 @@ pub fn run(client: &mut Client, command: &Auth) -> Result<Value> {
             Ok(json!({"cleared":true,"baseUrl":client.config.base_url}))
         }
         Auth::Export { task, file } => {
-            validation::uuid(task)?;
+            validation::task_id(task)?;
             let token = client.config.cookies.get(&format!("__Host-canvatopsd-task-{task}")).ok_or_else(|| invalid("No direct credential; export the parent task when it provides authorization"))?;
             validation::token(token)?;
             let credential = Credential {
@@ -87,7 +87,7 @@ pub fn run(client: &mut Client, command: &Auth) -> Result<Value> {
                         "Credential format or endpoint does not match the selected service",
                     ));
                 }
-                json!({"taskId":validation::uuid(&saved.task_id)?,"token":validation::token(&saved.token)?})
+                json!({"taskId":validation::task_id(&saved.task_id)?,"token":validation::token(&saved.token)?})
             } else {
                 let url = url::Url::parse(content.trim())?;
                 let task = validation::task_link(&url)?

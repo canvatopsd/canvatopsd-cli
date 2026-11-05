@@ -17,3 +17,7 @@ Conversion uses the hosted service. Installation validation uses offline discove
 Read [doc/development.md](doc/development.md). Source is in `src/`, CLI entry in `bin/`, deployment tools in `deployment/`, Skill in `skills/`, documentation in `doc/`, and versioned CLI packages in `releases/`.
 
 Use `npm ci`, `npm run check`, `npm run build` and `npm run check:release`. Keep temporary files and verification evidence in the owning repository's `.tmp/`. Keep source README tracked. Do not overwrite a versioned release; follow the documented version bump and archive checks. Do not modify the hosted API, create paid conversion jobs, publish npm or push repository changes unless the user's task authorizes those actions.
+
+## CLI release names
+
+Use stable three-part semantic versions (`major.minor.patch`) in module releases, package metadata and artifact names. Published artifacts remain immutable.
