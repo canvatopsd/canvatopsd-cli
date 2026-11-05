@@ -35,6 +35,8 @@ pub struct Settings {
     pub task_parents: BTreeMap<String, Entries>,
     #[serde(default)]
     pub internal_submissions: bool,
+    #[serde(default)]
+    pub local_credentials_migrated: bool,
     #[serde(flatten)]
     pub extra: BTreeMap<String, serde_json::Value>,
 }
@@ -111,6 +113,51 @@ pub fn update<T>(change: impl FnOnce(&mut Settings) -> Result<T>) -> Result<T> {
     private_permissions(&path, 0o600)?;
     Ok(result)
 }
+// Older local installations used the prod state root. Copy only this loopback
+// endpoint's credentials once; the old file remains intact and auth clear stays final.
+pub fn migrate_local_credentials(settings: &mut Settings, base_url: &str) -> Result<()> {
+    if crate::installation::ENVIRONMENT != "local" || settings.local_credentials_migrated {
+        return Ok(());
+    }
+    let url = secure_url(base_url)?;
+    if !matches!(url.host_str(), Some("localhost" | "127.0.0.1" | "[::1]")) {
+        return Ok(());
+    }
+    let source = crate::installation::root()?
+        .with_file_name("prod")
+        .join("data/cli/session.json");
+    let file = match fs::File::open(source) {
+        Ok(file) => file,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            settings.local_credentials_migrated = true;
+            return Ok(());
+        }
+        Err(error) => return Err(error.into()),
+    };
+    private_permissions_file(&file, 0o600)?;
+    let previous: Settings =
+        serde_json::from_reader(file).context("Invalid previous CLI configuration")?;
+    for (current, previous) in [
+        (&mut settings.sessions, &previous.sessions),
+        (&mut settings.submission_tokens, &previous.submission_tokens),
+        (&mut settings.task_parents, &previous.task_parents),
+    ] {
+        if let Some(entries) = previous.get(base_url) {
+            let target = current.entry(base_url.to_owned()).or_default();
+            for (key, value) in entries {
+                if target.get(key).is_some_and(|saved| saved != value) {
+                    return Err(invalid(
+                        "Local credential migration conflict; restore matching task access before initializing",
+                    ));
+                }
+                target.insert(key.clone(), value.clone());
+            }
+        }
+    }
+    settings.local_credentials_migrated = true;
+    Ok(())
+}
+
 pub fn private_permissions(path: &std::path::Path, mode: u32) -> Result<()> {
     #[cfg(windows)]
     {

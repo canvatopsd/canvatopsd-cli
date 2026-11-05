@@ -61,6 +61,7 @@ fn run(cli: Cli) -> Result<Value> {
             };
             let connection = config::connection(&init, &saved)?;
             config::update(|settings| {
+                config::migrate_local_credentials(settings, &connection.base_url)?;
                 settings.base_url = Some(connection.base_url.clone());
                 settings.origin = Some(connection.origin.clone());
                 settings.internal_submissions = *internal;
