@@ -1,6 +1,6 @@
 {
   "name": "@canvatopsd/cli",
-  "version": "3.4.11",
+  "version": "3.4.12",
   "description": "Canva to PSD converter CLI for AI agents. Export public Canva designs to editable layered Photoshop PSDs with Rust, JSON commands, verified downloads and bundled Agent Skills.",
   "type": "module",
   "bin": {
@@ -126,7 +126,8 @@
       "apiKeyRequiredForHostedWorkflow": false,
       "emailRequired": true,
       "payment": "user completes hosted checkout before conversion starts"
-    }
+    },
+    "environment": "prod"
   },
   "repository": {
     "type": "git",

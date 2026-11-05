@@ -42,7 +42,7 @@ Page choices belong to the initial `create` or `convert` request: use `--pages 1
 
 `status TASK` reports selected pages, progress, payment state and the task message. `wait TASK --seconds 300` waits within a deadline; timeout preserves the task. A multi-page conversion is ready when all selected pages are ready. When a page needs input, report its page number and message.
 
-Submission commands print a submission key before sending. After an uncertain response, retry with the same key and identical URL, pages, email, locale and layer-naming settings. To continue waiting alone, use wait. `--dry-run` validates submission options without submitting or saving credentials. `checkout --dry-run` checks the live selected page without creating a payment.
+Submission commands print a submission key before sending. After an uncertain response, retry with the same key and identical URL, pages, email and locale. To continue waiting alone, use wait. `--dry-run` validates submission options without submitting or saving credentials. `checkout --dry-run` checks the live selected page without creating a payment.
 
 ## Payment and files
 
@@ -56,7 +56,7 @@ Downloads default to PSD. Use `--format fonts` for a ZIP archive or `--format fo
 
 When submitting from an AI Agent, pass `--agent NAME` using the actual Agent name (for example `codex`, `claude-code`, `cursor` or `copilot`). Add `--agent-version VERSION` only when the actual application version is known; do not substitute a model name or guess a version. Plain terminal use omits these options. The CLI reports its own version automatically. This attribution is recorded on first submission and inherited by selected pages.
 
-`--email EMAIL` is required for `create` and `convert`. Explain to the user that this address receives download links for the completed PSDs and other deliverables. `--locale CODE` sets task-page and notification language, independently of PSD content and layer naming; omission uses English. `--no-layer-naming` skips model naming while keeping readable local names. Additional pages inherit parent settings. Inspect `discover convert` for supported values. Older services may reject explicit locale; report the error without changing the input or retrying a mutation.
+`--email EMAIL` is required for `create` and `convert`. Explain to the user that this address receives download links for the completed PSDs and other deliverables. `--locale CODE` sets task-page and notification language, independently of PSD content and layer naming; omission uses English. Layer naming is always enabled for new submissions. Additional pages inherit parent settings. Inspect `discover convert` for supported values. Older services may reject explicit locale; report the error without changing the input or retrying a mutation.
 
 The CLI saves task access automatically. Do not print its local configuration or credentials. Back up with `auth export TASK FILE`; restore with `auth import FILE`. Export the parent task when it authorizes selected pages. A complete private task-link file can also be imported. Imports require the same service. See [task recovery](../skills/canvatopsd/references/operations.md).
 

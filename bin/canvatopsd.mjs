@@ -2,6 +2,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { nativeExecutable } from "./native-executable.mjs";
 import metadata from "../package.json" with { type: "json" };
 
 const target = `${process.platform}-${process.arch}`;
@@ -17,8 +18,11 @@ if (!metadata.canvatopsd.publishTargets.includes(target)) {
   );
   process.exit(1);
 }
-const executable =
-  process.platform === "win32" ? "canvatopsd.exe" : "canvatopsd";
+const executable = nativeExecutable(
+  metadata.version,
+  metadata.canvatopsd.environment,
+  target,
+);
 const path = fileURLToPath(
   new URL(`../runtime/${target}/${executable}`, import.meta.url),
 );

@@ -35,6 +35,6 @@
     }
   ],
   "softwareHelp": "https://github.com/canvatopsd/canvatopsd-cli/blob/main/doc/agent-discovery.md",
-  "softwareVersion": "3.4.11",
+  "softwareVersion": "3.4.12",
   "license": "https://spdx.org/licenses/MIT"
 }

@@ -4,6 +4,17 @@ use regex::Regex;
 use serde_json::{Value, json};
 use url::Url;
 
+pub fn delivery_email(value: &str) -> Result<String> {
+    let email = value.trim().to_lowercase();
+    let schema: Value = serde_json::from_str(include_str!("delivery-email.schema.json"))?;
+    if !Regex::new(field(&schema, "pattern")?)?.is_match(&email) {
+        return Err(invalid(
+            "Provide a valid --email address to receive download links for completed PSDs and other deliverables",
+        ));
+    }
+    Ok(email)
+}
+
 pub fn token(value: &str) -> Result<String> {
     if value.len() != 64
         || !value

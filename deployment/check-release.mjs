@@ -1,3 +1,4 @@
+import { nativeExecutable } from "../bin/native-executable.mjs";
 import { createHash } from "node:crypto";
 import { checkPrivacy } from "./check-privacy.mjs";
 import { readdir, readFile, open, mkdir, mkdtemp } from "node:fs/promises";
@@ -31,8 +32,13 @@ function checkNativeHeader(bytes, target) {
 }
 export async function checkRelease(
   directory = build,
-  { publishing = false } = {},
+  { publishing = false, environment = "prod" } = {},
 ) {
+  if (
+    !["local", "prod"].includes(environment) ||
+    (publishing && environment !== "prod")
+  )
+    throw new Error("Public npm publication requires the prod distribution");
   directory = resolve(directory);
   let files = 0;
   async function inspect(folder) {
@@ -99,8 +105,10 @@ export async function checkRelease(
     manifest.license !== source.license ||
     release.version !== source.version ||
     release.runtime !== "rust" ||
+    release.environment !== environment ||
     manifest.private ||
     manifest.dependencies ||
+    manifest.canvatopsd.environment !== environment ||
     manifest.bin?.canvatopsd !== "bin/canvatopsd.mjs" ||
     manifest.publishConfig?.access !== "public" ||
     manifest.publishConfig?.registry !== "https://registry.npmjs.org/"
@@ -125,16 +133,47 @@ export async function checkRelease(
     throw new Error("Runtime contents differ from declared release targets");
   for (const target of release.targets) {
     if (!targets[target]) throw new Error(`Unknown native target: ${target}`);
-    const path = join(directory, "runtime", target, targets[target].executable);
-    const handle = await open(path, "r");
-    const bytes = Buffer.alloc(65536);
-    try {
-      await handle.read(bytes, 0, bytes.length, 0);
-    } finally {
-      await handle.close();
-    }
+    const path = join(
+      directory,
+      "runtime",
+      target,
+      nativeExecutable(source.version, environment, target),
+    );
+    const bytes = await readFile(path);
     if (!checkNativeHeader(bytes, target))
       throw new Error(`Binary format/architecture does not match ${target}`);
+    const identities = [
+      ...bytes
+        .toString("latin1")
+        .matchAll(
+          /CANVATOPSD_INSTALLATION_V1:(\{[^\x00]+?\}):END_INSTALLATION/g,
+        ),
+    ];
+    if (identities.length !== 1)
+      throw new Error(
+        `Missing or ambiguous native installation identity: ${target}`,
+      );
+    const identity = JSON.parse(identities[0][1]);
+    if (identity.embeddedConfiguration !== false)
+      throw new Error(
+        `Private embedded configuration is forbidden in CLI distributions: ${target}`,
+      );
+    if (
+      identity.environment !== environment ||
+      identity.version !== source.version ||
+      identity.revision !== release.revision ||
+      identity.operatingSystem !==
+        (target.startsWith("darwin-")
+          ? "macos"
+          : target.startsWith("win32-")
+            ? "windows"
+            : "linux") ||
+      identity.architecture !==
+        (target.endsWith("arm64") ? "aarch64" : "x86_64")
+    )
+      throw new Error(
+        `Native installation identity does not match the CLI distribution: ${target}`,
+      );
     if (publishing) {
       const receipt = JSON.parse(
         await readFile(
@@ -142,9 +181,7 @@ export async function checkRelease(
           "utf8",
         ),
       );
-      const digest = createHash("sha256")
-        .update(await readFile(path))
-        .digest("hex");
+      const digest = createHash("sha256").update(bytes).digest("hex");
       if (
         receipt.target !== target ||
         receipt.version !== source.version ||

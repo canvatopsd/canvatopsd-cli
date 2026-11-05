@@ -14,9 +14,9 @@ Web-issued private task links can use `/task/TASK`, `/task/TASK/payment` or `/ta
 
 ## Submission identity and recovery
 
-The CLI reports its own channel and version. Agent name and application version are explicit optional inputs. An uncertain submission must reuse its original task ID, saved credential and identical URL, email, locale, layer-naming settings and page selection. See [R2 reception and recovery](submission-inbox.md). Rejected requests fail explicitly; do not drop fields or retry with different inputs.
+The CLI reports its own channel and version. Agent name and application version are explicit optional inputs. An uncertain submission must reuse its original task ID, saved credential and identical URL, email, locale and page selection. See [R2 reception and recovery](submission-inbox.md). Rejected requests fail explicitly; do not drop fields or retry with different inputs.
 
-`--locale CODE` sets task-page and notification language. Omission leaves the API default. The provider owns `web/contracts/ui-locale.schema.json`; the CLI snapshot at `src/ui-locale.schema.json` must match it. The CLI also keeps exact snapshots of the provider-owned Rust task-ID and native installation contracts in `src/contracts/` and `deployment/native-build.rs`. Source checks compare these snapshots with Web when built inside the product checkout. Standalone public builds use the bundled snapshots without requiring Web source.
+`--locale CODE` sets task-page and notification language. Omission leaves the API default. The provider owns `web/contracts/ui-locale.schema.json`; the CLI snapshot at `src/ui-locale.schema.json` must match it. The CLI also keeps exact snapshots of the provider-owned Rust task-ID and native installation contracts in `src/contracts/` and `deployment/native-build.rs`. The delivery email pattern is also copied from `web/contracts/delivery-email.schema.json` so CLI and Web use the same accepted syntax and normalization. Source checks compare these snapshots with Web when built inside the product checkout. Standalone public builds use the bundled snapshots without requiring Web source.
 
 ## Validation boundaries
 

@@ -120,13 +120,12 @@ checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
 
 [[package]]
 name = "canvatopsd-cli"
-version = "3.4.11"
+version = "3.4.12"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
  "clap",
  "dirs",
- "email_address",
  "fs2",
  "hex",
  "rand",
@@ -280,15 +279,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.9",
-]
-
-[[package]]
-name = "email_address"
-version = "0.2.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e079f19b08ca6239f47f8ba8509c11cf3ea30095831f7fed61441475edd8c449"
-dependencies = [
- "serde",
 ]
 
 [[package]]

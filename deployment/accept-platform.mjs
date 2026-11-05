@@ -1,9 +1,10 @@
+import { nativeExecutable } from "../bin/native-executable.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { build } from "./paths.mjs";
-import { targets, hostTarget } from "./targets.mjs";
+import { hostTarget } from "./targets.mjs";
 import { checkRelease } from "./check-release.mjs";
 import { checkCredentialPrivacy } from "./check-credential-privacy.mjs";
 
@@ -13,7 +14,7 @@ const binary = join(
   build,
   "runtime",
   hostTarget,
-  targets[hostTarget].executable,
+  nativeExecutable(release.version, release.environment, hostTarget),
 );
 const result = JSON.parse(
   execFileSync(

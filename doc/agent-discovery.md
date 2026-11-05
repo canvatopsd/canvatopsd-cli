@@ -91,10 +91,10 @@ A download size/hash mismatch leaves no final output file. An existing output fi
 
 ## Page selection and stable task identity
 
-Normal file and payment commands keep `data.taskId` equal to the original TASK,
-with `data.page` identifying the design page. Raw `request`
+File commands keep `data.taskId` equal to the original TASK,
+with `data.page` identifying the design page. Payment commands return the entire selected set in `data.pages`. Raw `request`
 responses retain the API shape. Choose conversion pages when submitting with
-`convert URL --email EMAIL --pages 1,3` or `create URL --email EMAIL --pages 1,3`; omitting `--pages` converts
+`convert URL --email EMAIL --pages 1,3`; `create` submits page 1 without waiting. Omitting `--pages` converts
 page 1 only. `wait TASK` never submits a second page-selection command.
 File commands use `page_required` or `page_not_found` with
 `nextAction.requiredOption` set to `--page` when a converted page must be identified.

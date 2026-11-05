@@ -1,8 +1,12 @@
-# CLI 3.4.11 and current Web
+# CLI 3.4.12 and current Web
 
-This release follows the R2-backed Web product after retirement of the independent Native API and Ops services. It does not modify or deploy Web, Payment, Runner or Email.
+This release follows the R2-backed Web product after retirement of the independent Native API and Ops services. Its companion Web update retains original submissions and CLI/Agent attribution and shares the delivery email validation contract. Payment, Runner and Email do not require deployment for this change.
 
 ## Behavior changes
+
+- Public package checks reject private embedded configuration, wrong native environments and mismatched installation identities. Local installation builds a separately checked distribution and uses only local state.
+- CLI and Web normalize and validate email against one provider-owned pattern. The documented multi-page command is `convert --pages`; `create` submits page 1.
+- Layer naming is always enabled for new CLI submissions. There is no command-line switch to disable it.
 
 - New submissions require a delivery email; help and missing-email errors explain that it receives completed PSD and other deliverable download links. They retain the initial selected pages; omission selects page 1.
 - Private task links accept the entry, payment and result routes, including locale prefixes and selected-page queries.

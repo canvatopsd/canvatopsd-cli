@@ -11,7 +11,10 @@ export const archive = join(
   `canvatopsd-cli-${metadata.version}.tgz`,
 );
 
-export async function checkNpmArchive(file = archive) {
+export async function checkNpmArchive(
+  file = archive,
+  { environment = "prod" } = {},
+) {
   const entries = [];
   await t({
     file,
@@ -28,7 +31,7 @@ export async function checkNpmArchive(file = archive) {
   const directory = await mkdtemp(join(checks, `${metadata.version}-`));
   await x({ file, cwd: directory, strict: true });
   const release = join(directory, "package");
-  await checkRelease(release);
+  await checkRelease(release, { environment });
   return release;
 }
 

@@ -180,9 +180,6 @@ pub struct Submission {
     /// Reuse this task ID after an uncertain response
     #[arg(long)]
     pub task_id: Option<String>,
-    /// Use local layer names without model naming
-    #[arg(long)]
-    pub no_layer_naming: bool,
     /// Validate locally without submitting or saving credentials
     #[arg(long)]
     pub dry_run: bool,

@@ -3,7 +3,7 @@ name: canvatopsd
 description: Convert public Canva links to editable layered Photoshop PSDs, or retrieve previews and paid files for an existing CanvaToPSD task. Use for Canva to PSD, Canva to Photoshop and layered PSD export. Requires shell access; does not edit existing PSDs or convert arbitrary images/PDFs.
 metadata:
   author: CanvaToPSD
-  version: "3.4.11"
+  version: "3.4.12"
   homepage: https://canvatopsd.com/ai-agent
 ---
 
@@ -26,7 +26,7 @@ canvatopsd preview TASK
 canvatopsd download TASK --out ./design.psd
 ```
 
-The bundled instructions describe Rust CLI 3.4.11; use its returned `taskId` as the same TASK throughout. Existing tasks start with `status TASK` or `wait TASK`, without creating another conversion.
+The bundled instructions describe Rust CLI 3.4.12; use its returned `taskId` as the same TASK throughout. Existing tasks start with `status TASK` or `wait TASK`, without creating another conversion.
 
 `preview TASK` returns `previewUrl`. Present that link unchanged so the user can view the design in the Web interface. Web handles interactive layer previews. To save a whole-page image, use `preview TASK --out ./preview.webp`. Preview links last seven days; run preview again for a fresh link to the same task. These private links are intended for delivery to the requesting user; do not publish them or extract their access information.
 
@@ -36,11 +36,11 @@ For specific pages, use `convert URL --email EMAIL --pages 1,3`. Without `--page
 
 A timeout preserves the task and returns `error.taskId`; resume with `wait TASK --seconds 300`. If a task requires input, inspect `status TASK` and report the relevant page and message. Do not repeatedly submit it.
 
-Submission commands print the task ID before sending. After an uncertain response, reuse `--task-id TASK_ID` with the identical URL, pages, email, locale and layer-naming settings. Keep the same task ID when recovering; it is not a replacement for saved task access.
+Submission commands print the task ID before sending. After an uncertain response, reuse `--task-id TASK_ID` with the identical URL, pages, email and locale. Keep the same task ID when recovering; it is not a replacement for saved task access.
 
 When submitting from an AI Agent, pass `--agent NAME` using the actual Agent name (for example `codex`, `claude-code`, `cursor` or `copilot`). Add `--agent-version VERSION` only when the actual application version is known; do not substitute a model name or guess a version. Plain terminal use omits these options. The CLI reports its own version automatically. This attribution is recorded on first submission and inherited by selected pages.
 
-`--email EMAIL` is required for `create` and `convert`. Explain to the user that this address receives download links for the completed PSDs and other deliverables. `--locale CODE` sets task-page and notification language; omission uses English. It does not change PSD content or layer naming. `--no-layer-naming` skips model naming while retaining readable local names. Inspect command discovery for allowed values; report unsupported options without silently changing the request.
+`--email EMAIL` is required for `create` and `convert`. Explain to the user that this address receives download links for the completed PSDs and other deliverables. `--locale CODE` sets task-page and notification language; omission uses English. It does not change PSD content or layer naming. Layer naming is always enabled for new submissions. Inspect command discovery for allowed values; report unsupported options without silently changing the request.
 
 Deliver the saved PSD path and preview link when available. Report dimensions, layers, fonts and validation only from returned data or actual inspection. Preview readiness, payment, verified download and Photoshop reopening are separate milestones. File writes refuse overwrites. Repository-generated output belongs under `.tmp/artifacts/`.
 

@@ -11,6 +11,7 @@ for (const [source, snapshot] of [
   ["native-runtime.rs", "src/contracts/native-runtime.rs"],
   ["native-build.rs", "deployment/native-build.rs"],
   ["ui-locale.schema.json", "src/ui-locale.schema.json"],
+  ["delivery-email.schema.json", "src/delivery-email.schema.json"],
 ]) {
   const original = join(provider, source);
   if (

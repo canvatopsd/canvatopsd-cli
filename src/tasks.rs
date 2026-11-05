@@ -10,7 +10,7 @@ use std::time::{Duration, Instant};
 
 pub fn submission(input: &Submission) -> Result<Value> {
     validation::canva_link(&input.url)?;
-    let mut body = json!({"canvaUrl":input.url.trim(),"layerNaming":!input.no_layer_naming});
+    let mut body = json!({"canvaUrl":input.url.trim(),"layerNaming":true});
     if let Some(key) = &input.task_id {
         body["taskId"] = json!(validation::task_id(key)?);
     }
@@ -21,12 +21,7 @@ pub fn submission(input: &Submission) -> Result<Value> {
     if let Some(version) = &input.agent_version {
         body["client"]["agentVersion"] = json!(client_label(version, 64)?);
     }
-    if !email_address::EmailAddress::is_valid(&input.email) {
-        return Err(invalid(
-            "Provide a valid --email address to receive download links for completed PSDs and other deliverables",
-        ));
-    }
-    body["email"] = json!(input.email.to_lowercase());
+    body["email"] = json!(validation::delivery_email(&input.email)?);
     if let Some(locale) = &input.locale {
         body["locale"] = json!(locale);
     }
