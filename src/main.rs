@@ -1,3 +1,4 @@
+mod analytics;
 mod args;
 mod artifacts;
 mod auth;
@@ -29,7 +30,7 @@ use validation::field;
 fn context(options: &args::Options) -> Result<Client> {
     Client::new(config::connection(options, &config::read()?)?)
 }
-fn run(cli: Cli) -> Result<Value> {
+fn run(cli: &Cli) -> Result<Value> {
     let options = &cli.options;
     // Offline commands deliberately do not read credentials or initialize networking.
     match &cli.command {
@@ -196,7 +197,16 @@ fn main() {
             emit_error(error::argument_error(&error));
         }
     };
-    match run(cli) {
+    let started = std::time::Instant::now();
+    let result = run(&cli);
+    if let Err(error) = analytics::record(&cli, &result, started.elapsed()) {
+        // Analytics failure is explicit, but never changes or replays a business result.
+        eprintln!(
+            "{}",
+            json!({"warning":{"code":"analytics_record_failed","message":error.to_string()}})
+        );
+    }
+    match result {
         Ok(data) => println!(
             "{}",
             serde_json::to_string_pretty(&json!({"ok":true,"data":data}))
