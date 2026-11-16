@@ -1,6 +1,6 @@
 # CanvaToPSD CLI command reference
 
-Generated from Rust CLI 3.4.15 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
+Generated from Rust CLI 3.4.16 with `canvatopsd discover`. Run `npm run doc:commands` to update this file. Do not edit command tables by hand.
 
 Use this page to inspect every command without installing or executing the CLI. For capabilities, installation availability and pricing boundaries, read [product facts](product-facts.md). For task recovery and credential handling, read [Agent guidance](agent-discovery.md).
 
@@ -38,7 +38,7 @@ canvatopsd convert <url> --email <EMAIL> [OPTIONS]
 | `--agent-version <AGENT_VERSION>` | no       | —       | Actual Agent application version, when known                                                                                                                                                                                 |
 | `--task-id <TASK_ID>`             | no       | —       | Reuse this task ID after an uncertain response                                                                                                                                                                               |
 | `--dry-run`                       | no       | false   | Validate locally without submitting or saving credentials                                                                                                                                                                    |
-| `--pages <numbers>`               | no       | —       | Design page numbers, e.g. 1,3; required for multi-page designs                                                                                                                                                               |
+| `--pages <numbers>`               | no       | —       | Design page numbers, e.g. 1,3; omission submits page 1 only                                                                                                                                                                  |
 | `--seconds <SECONDS>`             | no       | 300     | Maximum wait after submission; timeout does not cancel conversion Integer; minimum 1.                                                                                                                                        |
 
 ## canvatopsd create

@@ -34,7 +34,7 @@ canvatopsd download TASK --page 3 --out ./page3.psd
 
 Page numbers start at 1. `preview TASK` opens the overview even when several pages were selected. Image saving and download require a specific page when several were converted. Prepaid checkout covers all selected pages. Missing selections return `availablePages` and `nextAction`.
 
-Page choices belong to the initial `create` or `convert` request: use `--pages 1,3` for specific pages, or omit it to convert page 1 only. Follow the returned task with `wait TASK`.
+Choose pages in the initial `convert` request with `--pages 1,3`; omission submits page 1 only. `create` submits page 1 without waiting. Follow the returned task with `wait TASK`.
 
 `pages TASK` reads recorded source-page discovery without starting or refreshing capture.
 
@@ -42,7 +42,7 @@ Page choices belong to the initial `create` or `convert` request: use `--pages 1
 
 `status TASK` reports selected pages, progress, payment state and the task message. `wait TASK --seconds 300` waits within a deadline; timeout preserves the task. A multi-page conversion is ready when all selected pages are ready. When a page needs input, report its page number and message.
 
-Submission commands print a submission key before sending. After an uncertain response, retry with the same key and identical URL, pages, email and locale. To continue waiting alone, use wait. `--dry-run` validates submission options without submitting or saving credentials. `checkout --dry-run` checks the live selected page without creating a payment.
+Submission commands print `taskId` before sending. After an uncertain response, retry with `--task-id TASK_ID`, the saved task credentials and identical URL, pages, email and locale. To continue waiting alone, use wait. `--dry-run` validates submission options without submitting or saving credentials. `checkout --dry-run` checks the live selected page without creating a payment.
 
 ## Payment and files
 
@@ -60,7 +60,7 @@ When submitting from an AI Agent, pass `--agent NAME` using the actual Agent nam
 
 The CLI saves task access automatically. Do not print its local configuration or credentials. Back up with `auth export TASK FILE`; restore with `auth import FILE`. Export the parent task when it authorizes selected pages. A complete private task-link file can also be imported. Imports require the same service. See [task recovery](../skills/canvatopsd/references/operations.md).
 
-For HTTP 401/403, restore matching task access. For `ELOCKED`, wait for the other settings writer to finish. A task ID or submission key alone cannot restore access. `auth clear` removes local access for the selected service and should only be used intentionally.
+For HTTP 401/403, restore matching task access. For `ELOCKED`, wait for the other settings writer to finish. A task ID alone cannot restore access. `auth clear` removes local access for the selected service and should only be used intentionally.
 
 ## Discovery and Skill installation
 

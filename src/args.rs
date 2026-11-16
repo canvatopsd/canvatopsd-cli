@@ -41,7 +41,7 @@ pub enum Command {
     Convert {
         #[command(flatten)]
         input: Submission,
-        /// Design page numbers, e.g. 1,3; required for multi-page designs
+        /// Design page numbers, e.g. 1,3; omission submits page 1 only
         #[arg(long, value_name = "numbers")]
         pages: Option<String>,
         /// Maximum wait after submission; timeout does not cancel conversion

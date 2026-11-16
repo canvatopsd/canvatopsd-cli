@@ -25,8 +25,8 @@ canvatopsd auth export TASK /absolute/task-access.json
 canvatopsd auth import /absolute/task-access.json
 ```
 
-Exports are secret files; do not print or attach them. Export the original parent task when it provides access to selected pages. Imports require the same service. `auth status` reports saved access without printing secrets. Without email or a backup, lost local task access cannot be recovered through self-service. A task ID or submission key alone does not restore access.
+Exports are secret files; do not print or attach them. Export the original parent task when it provides access to selected pages. Imports require the same service. `auth status` reports saved access without printing secrets. Without email or a backup, lost local task access cannot be recovered through self-service. A task ID alone does not restore access.
 
-For HTTP 401/403, restore the matching task access. `ELOCKED` means another command is updating local settings: let it finish before retrying. For an uncertain submission, retain the original submission key and identical settings. `wait_timeout` means continue with `wait TASK`; it does not cancel the conversion.
+For HTTP 401/403, restore the matching task access. `ELOCKED` means another command is updating local settings: let it finish before retrying. For an uncertain submission, retry with `--task-id TASK_ID`, the saved task credentials and identical URL, pages, email and locale. `wait_timeout` means continue with `wait TASK`; it does not cancel the conversion.
 
 Normal commands use the hosted service automatically. Do not change service settings, reconstruct URLs, invoke maintenance commands, retry failed execution or restart services merely to recover a conversion. Report explicit errors and use the supported recovery commands.

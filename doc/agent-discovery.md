@@ -54,7 +54,7 @@ For multi-page tasks, add `--page N` to preview and download. Prepaid checkout c
 
 1. Read `skill show` and run `doctor` for the intended endpoint.
 2. Validate a public Canva URL with a submission `--dry-run` when helpful.
-3. Run `convert`, preserve its `taskId` and submission key.
+3. Run `convert`, preserve its `taskId` and saved task credentials.
 4. Run checkout and share the returned hosted checkout link with the user before conversion starts.
 5. After payment, wait for conversion, inspect the preview and download the PSD. Report the saved path and returned integrity evidence.
 
@@ -77,15 +77,15 @@ These references describe capabilities and limits. They do not guarantee an arbi
 
 ## Failure recovery for agents
 
-| Error                              | Next action                                                                                         |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `wait_timeout`                     | Preserve `taskId` and continue with `wait TASK`; do not create another conversion.                  |
-| `page_required` / `page_not_found` | Read `status TASK` and specify a selected design page using `--page N`.                             |
-| `task_requires_attention`          | Inspect `status TASK` and report the execution issue; do not repeatedly submit.                     |
-| `page_selection_conflict`          | Inspect the existing task's confirmed selection before proceeding.                                  |
-| `ELOCKED`                          | Wait for the other config writer; reuse the submission key when the request outcome is uncertain.   |
-| HTTP 401/403                       | Import matching task credentials for the selected endpoint; task keys alone cannot restore access.  |
-| `native_binary_missing`            | Install an archive containing this execution environment's OS/CPU; do not retry the hosted service. |
+| Error                              | Next action                                                                                                     |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `wait_timeout`                     | Preserve `taskId` and continue with `wait TASK`; do not create another conversion.                              |
+| `page_required` / `page_not_found` | Read `status TASK` and specify a selected design page using `--page N`.                                         |
+| `task_requires_attention`          | Inspect `status TASK` and report the execution issue; do not repeatedly submit.                                 |
+| `page_selection_conflict`          | Inspect the existing task's confirmed selection before proceeding.                                              |
+| `ELOCKED`                          | Wait for the other config writer; reuse `--task-id TASK_ID` and identical inputs after an uncertain submission. |
+| HTTP 401/403                       | Import matching task credentials for the selected endpoint; a task ID alone cannot restore access.              |
+| `native_binary_missing`            | Install an archive containing this execution environment's OS/CPU; do not retry the hosted service.             |
 
 A download size/hash mismatch leaves no final output file. An existing output file is preserved; choose a new path. Maintenance commands require an explicit maintenance task.
 

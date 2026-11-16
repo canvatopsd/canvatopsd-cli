@@ -3,7 +3,7 @@ name: canvatopsd
 description: Convert public Canva links to editable layered Photoshop PSDs, or retrieve previews and paid files for an existing CanvaToPSD task. Use for Canva to PSD, Canva to Photoshop and layered PSD export. Requires shell access; does not edit existing PSDs or convert arbitrary images/PDFs.
 metadata:
   author: CanvaToPSD
-  version: "3.4.15"
+  version: "3.4.16"
   homepage: https://canvatopsd.com/ai-agent
 ---
 
@@ -12,6 +12,8 @@ metadata:
 Use `canvatopsd` with Node.js 22.16+. No account or API key is required. New submissions require `--email EMAIL`; explain that this address receives download links for the completed PSDs and other deliverables, and ask for their delivery email address if none was provided. Do not guess an address or submit without one. Business commands return JSON: success is `{"ok":true,"data":...}`; failure is `{"ok":false,"error":{"code":"...","message":"..."}}` with exit code 1. Help/version are text. Do not add `--json`.
 
 At the start of an Agent task, run `canvatopsd update check` once before hosted commands. Report whether a newer stable CLI is available. The check returns current/latest versions and an installation command when needed; it does not install anything. A local version ahead of npm is not a downgrade request. If the check fails, report that uncertainty separately; do not claim the CLI is current.
+
+Run `canvatopsd skill status AGENT` for the installed Agent target. If it reports `current: false`, read `canvatopsd skill show` for the current bundled workflow before submitting. Review local edits before replacing the installed Skill and start a new Agent session after updating.
 
 Run `canvatopsd --help` or `canvatopsd discover COMMAND` for exact arguments. Discovery works offline. Run `doctor` to check the selected service before submitting work; report failures without creating a probe conversion. If the CLI is missing, read [references/operations.md](references/operations.md).
 
@@ -26,7 +28,7 @@ canvatopsd preview TASK
 canvatopsd download TASK --out ./design.psd
 ```
 
-The bundled instructions describe Rust CLI 3.4.15; use its returned `taskId` as the same TASK throughout. Existing tasks start with `status TASK` or `wait TASK`, without creating another conversion.
+The bundled instructions describe Rust CLI 3.4.16; use its returned `taskId` as the same TASK throughout. Existing tasks start with `status TASK` or `wait TASK`, without creating another conversion.
 
 `preview TASK` returns `previewUrl`. Present that link unchanged so the user can view the design in the Web interface. Web handles interactive layer previews. To save a whole-page image, use `preview TASK --out ./preview.webp`. Preview links last seven days; run preview again for a fresh link to the same task. These private links are intended for delivery to the requesting user; do not publish them or extract their access information.
 

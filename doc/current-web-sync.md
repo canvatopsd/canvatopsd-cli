@@ -22,3 +22,15 @@ This release follows the R2-backed Web product after retirement of the independe
 Source formatting, Cargo check and Clippy, final release inspection, native macOS ARM64 acceptance and local HTTP contract acceptance are required. The contract acceptance covers link import, payment scope and confirmation boundaries, status precedence, current delivery filenames, transfer integrity and no-overwrite behavior. It uses synthetic responses matching the Web handlers and does not perform a real conversion or payment.
 
 Local packaging and installation follow build, final-directory inspection, candidate archive inspection and installation from the checked immutable archive. Other operating systems, hosted conversion, live payment and public distribution require their separate acceptance and release steps. This change introduces no custom traits, generic abstractions, custom macros, shared locks or background tasks.
+
+## Agent guidance and protocol correction in 3.4.16
+
+The service handshake now declares `emailRequired: true` and `prepayment: true`.
+Doctor requires both capabilities and the task credential protocol. Deploy the
+Web protocol update before publishing this CLI release. Web retains the legacy
+`optionalEmail` handshake field for previously published clients.
+
+Recovery instructions use the original task ID with `--task-id TASK_ID`, saved
+credentials and identical inputs. Page-selection help states that omission
+submits page 1. After updating the CLI, inspect `skill status`, review installed
+Skill differences, replace outdated instructions and start a fresh Agent session.

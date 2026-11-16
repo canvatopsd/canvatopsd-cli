@@ -114,11 +114,12 @@ fn run(cli: &Cli) -> Result<Value> {
             let protocol = client.json("/task/protocol/read", &json!({}))?;
             if protocol["protocol"] != "canvatopsd-cli-v1"
                 || protocol["taskAccess"] != "task-token-v1"
-                || protocol["optionalEmail"] != true
+                || protocol["emailRequired"] != true
+                || protocol["prepayment"] != true
             {
                 return Err(CommandError::new(
                     "api_protocol_unsupported",
-                    "API does not support this CLI's task credential protocol",
+                    "API must support task credentials, required delivery email and prepaid conversion",
                 )
                 .into());
             }
