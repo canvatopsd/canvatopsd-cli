@@ -69,3 +69,23 @@ never publish. No public remote or account permissions are assumed by source.
 publishing. Missing native receipts or mismatched revisions fail explicitly.
 Adding platform binaries or changing any packaged content requires a new version;
 existing single-platform 3.0.2 remains immutable.
+
+## Accepted macOS builds when hosted runners are unavailable
+
+Build the exact committed release source on an Apple Silicon Mac with
+`npm run build` and `npm run accept:platform`. Both commands use the prod
+installation identity. Package `.tmp/build/cli/runtime/darwin-arm64/` as
+`canvatopsd-cli-VERSION-darwin-arm64-native.tgz`, preserving the `darwin-arm64`
+parent directory and its native acceptance receipt. Keep intermediate output in
+the owning repository's root `.tmp/`.
+
+Upload this immutable archive to a release in this repository. Dispatch the
+release workflow with its tag as `macos_native_release` and the archive SHA-256
+as `macos_native_sha256`. The macOS collection job verifies that digest and
+passes the accepted binary and receipt to aggregation. The aggregate publication
+check verifies every platform's binary format, version, prod identity, source
+revision and native acceptance hash against the exact checked-out source.
+Linux and Windows retain their native hosted build and acceptance jobs.
+
+The hosted macOS runner remains the default when no accepted archive is
+specified. Public release records identify where native macOS acceptance ran.

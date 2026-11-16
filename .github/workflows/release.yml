@@ -9,6 +9,14 @@ on:
         description: Publish the checked archive to npm
         type: boolean
         default: false
+      macos_native_release:
+        description: Release tag containing accepted macOS ARM64 binaries
+        type: string
+        default: ""
+      macos_native_sha256:
+        description: SHA-256 of the accepted macOS native archive
+        type: string
+        default: ""
 permissions:
   contents: read
 jobs:
@@ -17,7 +25,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { target: darwin-arm64, runner: macos-26 }
+          - target: darwin-arm64
+            runner: ${{ inputs.macos_native_release && 'ubuntu-22.04' || 'macos-26' }}
           - { target: linux-x64, runner: ubuntu-22.04 }
           - { target: linux-arm64, runner: ubuntu-24.04-arm }
           - { target: win32-x64, runner: windows-2022 }
@@ -39,8 +48,32 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libssl-dev pkg-config
       - run: npm ci --cache .tmp/npm-cache
       - run: npm run check
-      - run: npm run build
-      - run: npm run accept:platform
+      - name: Build on the native runner
+        if: matrix.target != 'darwin-arm64' || !inputs.macos_native_release
+        run: npm run build
+      - name: Accept on the native runner
+        if: matrix.target != 'darwin-arm64' || !inputs.macos_native_release
+        run: npm run accept:platform
+      - name: Download accepted macOS ARM64 binaries
+        if: matrix.target == 'darwin-arm64' && inputs.macos_native_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MACOS_NATIVE_RELEASE: ${{ inputs.macos_native_release }}
+          MACOS_NATIVE_SHA256: ${{ inputs.macos_native_sha256 }}
+        run: |
+          mkdir -p .tmp/prebuilt .tmp/build/cli/runtime
+          gh release download "$MACOS_NATIVE_RELEASE" --repo "$GITHUB_REPOSITORY" --pattern 'canvatopsd-cli-*-darwin-arm64-native.tgz' --dir .tmp/prebuilt
+          node --input-type=module <<'NODE'
+          import { createHash } from 'node:crypto';
+          import { readFile, readdir } from 'node:fs/promises';
+          const files = await readdir('.tmp/prebuilt');
+          if (files.length !== 1 || !/^[a-f0-9]{64}$/.test(process.env.MACOS_NATIVE_SHA256 ?? ''))
+            throw new Error('Provide one accepted macOS archive and its SHA-256');
+          const digest = createHash('sha256').update(await readFile('.tmp/prebuilt/' + files[0])).digest('hex');
+          if (digest !== process.env.MACOS_NATIVE_SHA256)
+            throw new Error('Accepted macOS archive integrity mismatch');
+          NODE
+          tar -xzf .tmp/prebuilt/canvatopsd-cli-*-darwin-arm64-native.tgz -C .tmp/build/cli/runtime
       - uses: actions/upload-artifact@v4
         with:
           name: native-${{ matrix.target }}
